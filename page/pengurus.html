@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Susunan pengurus HMPS Sistem Informasi STMIK SZ NW Anjani."
+    />
+    <script src="/js/site-mode.js"></script>
+    <title>Susunan Pengurus - HMPS SI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style/style-BPH.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <a class="directory-brand" href="/page">
+          <img src="/hmpssi%20logo.png" alt="" width="56" height="56" />
+          <span>HMPS SI · STMIK SZ NW Anjani</span>
+        </a>
+        <h1>Anggota HMPS SI</h1>
+        <p>Daftar anggota dan kepengurusan periode 2026/2027</p>
+      </div>
+    </header>
+
+    <main class="container directory-main">
+      <div id="directoryGrid" class="directory-groups" aria-live="polite">
+        <p class="content-status">Memuat susunan pengurus...</p>
+      </div>
+      <div class="back-button-container">
+        <a href="/page" class="back-button"
+          ><i class="fas fa-arrow-left" aria-hidden="true"></i> Kembali ke
+          Beranda</a
+        >
+      </div>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>
+          &copy; <span id="currentYear"></span> HMPS Sistem Informasi STMIK SZ
+          NW Anjani.
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
+    <script src="/js/supabase-client.js"></script>
+    <script src="/js/all-komponen.js"></script>
+  </body>
+</html>

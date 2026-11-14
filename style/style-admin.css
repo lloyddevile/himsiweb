@@ -1,0 +1,638 @@
+:root {
+    color-scheme: light;
+    --admin-primary: #13294b;
+    --admin-primary-dark: #0c1b33;
+    --admin-primary-hover: #1d3b6b;
+    --admin-accent: #b45309;
+    --admin-accent-bright: #d97706;
+    --admin-text: #0f172a;
+    --admin-body: #334155;
+    --admin-muted: #64748b;
+    --admin-border: #e2e8f0;
+    --admin-border-strong: #cbd5e1;
+    --admin-surface: #ffffff;
+    --admin-background: #f7f8fa;
+    --admin-danger: #b91c1c;
+    --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--admin-body);
+    background: var(--admin-background);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-display);
+    color: var(--admin-text);
+    letter-spacing: -0.02em;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+a {
+    color: var(--admin-primary);
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--admin-accent-bright);
+    outline-offset: 2px;
+}
+
+.admin-header {
+    min-height: 68px;
+    padding: 0.75rem clamp(1rem, 4vw, 3rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--admin-primary-dark);
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-brand {
+    display: inline-flex;
+    gap: 0.75rem;
+    align-items: center;
+    color: #ffffff;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-weight: 700;
+}
+
+.admin-brand img {
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #ffffff;
+}
+
+.back-to-site {
+    color: rgba(255, 255, 255, 0.88);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.back-to-site:hover {
+    color: #ffffff;
+}
+
+.admin-main {
+    width: min(1120px, calc(100% - 2rem));
+    margin: 2.25rem auto 4rem;
+}
+
+.auth-card {
+    width: min(440px, 100%);
+    margin: 6vh auto;
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+}
+
+.auth-card h1,
+.dashboard-heading h1 {
+    margin: 0;
+    color: var(--admin-primary-dark);
+}
+
+.auth-card > p {
+    color: var(--admin-muted);
+    font-size: 0.94rem;
+}
+
+.auth-card form {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.auth-card label,
+.editor-form label,
+.password-settings label {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--admin-text);
+}
+
+.auth-card input,
+.editor-form input:not([type="checkbox"]):not([type="file"]),
+.editor-form textarea,
+.editor-form select,
+.password-settings input {
+    width: 100%;
+    min-height: 42px;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--admin-border-strong);
+    border-radius: 6px;
+    background: var(--admin-surface);
+    color: var(--admin-text);
+    font-family: var(--font-body);
+    font-weight: 400;
+    margin-top: 0.3rem;
+}
+
+.auth-card input:focus,
+.editor-form input:not([type="checkbox"]):not([type="file"]):focus,
+.editor-form textarea:focus,
+.editor-form select:focus,
+.password-settings input:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(19, 41, 75, 0.12);
+}
+
+.editor-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.photo-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.photo-preview {
+    display: grid;
+    width: 140px;
+    height: 140px;
+    place-items: center;
+    overflow: hidden;
+    border: 1px dashed var(--admin-border-strong);
+    border-radius: 8px;
+    background: var(--admin-background);
+    color: var(--admin-muted);
+    font-size: 0.82rem;
+    text-align: center;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.photo-editor-actions p {
+    margin: 0.5rem 0 0;
+    color: var(--admin-muted);
+    font-size: 0.85rem;
+}
+
+.photo-editor-dialog {
+    width: min(760px, calc(100% - 2rem));
+    max-height: min(90vh, 900px);
+    padding: clamp(1rem, 3vw, 1.5rem);
+    overflow: auto;
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    color: var(--admin-body);
+    background: var(--admin-surface);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+}
+
+.photo-editor-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.7);
+}
+
+.delete-confirm-dialog {
+    width: min(460px, calc(100% - 2rem));
+    padding: 0;
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    color: var(--admin-body);
+    background: var(--admin-surface);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.3);
+}
+
+.delete-confirm-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.62);
+    backdrop-filter: blur(3px);
+}
+
+.delete-confirm-content {
+    padding: clamp(1.25rem, 4vw, 1.75rem);
+}
+
+.delete-confirm-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+}
+
+.delete-confirm-heading .eyebrow {
+    margin-bottom: 0.25rem;
+}
+
+.delete-confirm-heading h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.delete-confirm-icon {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--admin-danger);
+    background: #fef2f2;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.delete-confirm-name {
+    margin: 1.2rem 0 0.25rem;
+    color: var(--admin-text);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.delete-confirm-message {
+    margin: 0;
+}
+
+.delete-confirm-warning {
+    margin-top: 1rem;
+    padding: 0.75rem 0.9rem;
+    border-left: 3px solid var(--admin-danger);
+    border-radius: 4px;
+    color: #7f1d1d;
+    background: #fef2f2;
+    font-size: 0.9rem;
+}
+
+.delete-confirm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    margin-top: 1.4rem;
+}
+
+.photo-editor-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.photo-editor-heading h2 {
+    margin: 0 0 0.25rem;
+}
+
+.photo-editor-heading p {
+    margin: 0;
+    color: var(--admin-muted);
+}
+
+.photo-canvas-wrap {
+    display: grid;
+    min-height: 180px;
+    max-height: 55vh;
+    place-items: center;
+    overflow: auto;
+    background: #0f172a;
+    border-radius: 8px;
+}
+
+.photo-canvas-wrap canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 55vh;
+    width: auto;
+    height: auto;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.photo-canvas-wrap canvas.is-pan-mode {
+    cursor: grab;
+}
+
+.photo-canvas-wrap canvas.is-pan-mode:active {
+    cursor: grabbing;
+}
+
+.photo-editor-modes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.photo-editor-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.photo-editor-controls label:not(.check-label) {
+    display: grid;
+    gap: 0.3rem;
+    color: var(--admin-text);
+    font-family: var(--font-display);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.photo-editor-controls input[type="number"] {
+    width: 130px;
+    min-height: 42px;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--admin-border-strong);
+    border-radius: 6px;
+    color: var(--admin-text);
+    background: var(--admin-surface);
+    font: inherit;
+}
+
+.photo-editor-controls .photo-zoom-control {
+    flex: 1 1 220px;
+}
+
+.photo-zoom-control span {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.photo-zoom-control input[type="range"] {
+    width: 100%;
+    min-width: 120px;
+    accent-color: var(--admin-primary);
+}
+
+.photo-zoom-control output {
+    min-width: 3.5rem;
+    color: var(--admin-primary);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
+
+.photo-editor-controls .check-label {
+    min-height: 42px;
+}
+
+.photo-editor-dialog .admin-status {
+    margin: 0.5rem 0;
+}
+
+.eyebrow {
+    margin: 0 0 0.3rem;
+    color: var(--admin-accent);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.dashboard-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.password-settings {
+    margin-bottom: 1.5rem;
+    padding: 0.95rem 1.15rem;
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+}
+
+.password-settings summary {
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--admin-primary);
+}
+
+.password-settings form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-end;
+    margin-top: 1rem;
+}
+
+.dashboard-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.tab-button {
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--admin-border-strong);
+    border-radius: 6px;
+    background: var(--admin-surface);
+    color: var(--admin-body);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.tab-button.active {
+    background: var(--admin-primary);
+    border-color: var(--admin-primary);
+    color: #ffffff;
+}
+
+.dashboard-panel {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.panel-heading h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.25rem;
+}
+
+.panel-heading p {
+    margin: 0 0 1.5rem;
+    color: var(--admin-muted);
+    font-size: 0.92rem;
+}
+
+.editor-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.form-wide {
+    grid-column: 1 / -1;
+}
+
+.check-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0.55rem 1.15rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.button-primary {
+    background: var(--admin-primary);
+    color: #ffffff;
+    border-color: var(--admin-primary);
+}
+
+.button-primary:hover {
+    background: var(--admin-primary-hover);
+    border-color: var(--admin-primary-hover);
+}
+
+.button-secondary {
+    background: var(--admin-surface);
+    color: var(--admin-text);
+    border-color: var(--admin-border-strong);
+}
+
+.button-secondary:hover {
+    background: var(--admin-background);
+}
+
+.button-danger {
+    background: #fef2f2;
+    color: var(--admin-danger);
+    border-color: #fecaca;
+}
+
+.button-danger:hover {
+    background: #fee2e2;
+}
+
+.admin-status {
+    min-height: 1.4em;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--admin-primary);
+}
+
+.admin-status.error {
+    color: var(--admin-danger);
+}
+
+.record-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.record-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.15rem;
+    background: var(--admin-background);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+}
+
+.record-card h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+}
+
+.record-meta {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--admin-muted);
+    margin: 0 0 0.4rem;
+}
+
+.record-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.gallery-records {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.gallery-record {
+    flex-direction: column;
+}
+
+.gallery-record img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 6px;
+}

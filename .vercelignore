@@ -1,0 +1,7 @@
+*.php
+*.tar.gz
+supabase/
+tests/
+README.md
+.env
+.env.*
