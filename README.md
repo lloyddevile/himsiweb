@@ -157,3 +157,5 @@ Hak cipta sepenuhnya dimiliki oleh HMPS Sistem Informasi, 2026.
 Semua hak cipta dilindungi undang-undang.
 
 Dengan lisensi MIT, Anda diizinkan untuk menggunakan, menyalin, memodifikasi, menggabungkan, menerbitkan, mendistribusikan, mensublisensikan, dan/atau menjual salinan perangkat lunak ini, dengan ketentuan bahwa pemberitahuan hak cipta dan pernyataan lisensi ini harus selalu disertakan pada semua salinan atau sebagian besar material yang signifikan dari perangkat lunak ini.
+#   h i m s i w e b  
+ 
