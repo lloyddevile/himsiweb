@@ -49,4 +49,8 @@ test("Vercel routes the homepage to /page and keeps page-specific files organize
 
     const adminPage = fs.readFileSync(path.join(root, "page", "admin.html"), "utf8");
     assert.doesNotMatch(adminPage, /<script src="\/js\/site-mode\.js"><\/script>/);
+
+    const homepage = fs.readFileSync(path.join(root, "page", "beranda.html"), "utf8");
+    assert.match(homepage, /id="upcomingAgenda"/);
+    assert.match(homepage, /id="activityMediaFolders"/);
 });

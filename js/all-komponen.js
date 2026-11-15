@@ -109,6 +109,101 @@ async function renderMembers(container, members, client) {
     }
 }
 
+function getDirectorySections(members) {
+    const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+    const coreOrder = new Map([
+        ["ketua umum", 0],
+        ["sekretaris umum", 1],
+        ["bendahara umum", 2],
+    ]);
+    const programStudyOrder = new Map([
+        ["kepala program studi", 0],
+        ["sekretaris program studi", 1],
+    ]);
+    const coreMembers = members.filter((member) => coreOrder.has(normalize(member.position)))
+        .sort((first, second) => coreOrder.get(normalize(first.position)) - coreOrder.get(normalize(second.position)));
+    const programStudyMembers = members.filter((member) => programStudyOrder.has(normalize(member.position)))
+        .sort((first, second) => programStudyOrder.get(normalize(first.position)) - programStudyOrder.get(normalize(second.position)));
+    const harianByDivision = new Map();
+    members.filter((member) =>
+        !coreOrder.has(normalize(member.position))
+        && !programStudyOrder.has(normalize(member.position))
+    ).forEach((member) => {
+        const division = member.division && normalize(member.division) !== "pengurus harian"
+            ? member.division
+            : "Lainnya";
+        if (!harianByDivision.has(division)) {
+            harianByDivision.set(division, []);
+        }
+        harianByDivision.get(division).push(member);
+    });
+
+    const divisionOrder = [
+        "Internal",
+        "Eksternal",
+        "Kesekretariatan",
+        "Pemberdayaan Perempuan",
+        "Medinfo (Media dan Informasi)",
+        "Lainnya",
+    ];
+    const orderedDivisions = Array.from(harianByDivision, ([division, divisionMembers]) => ({
+        division,
+        members: divisionMembers.sort((first, second) => {
+            const firstIsHead = normalize(first.position).startsWith("kepala divisi");
+            const secondIsHead = normalize(second.position).startsWith("kepala divisi");
+            return Number(secondIsHead) - Number(firstIsHead);
+        }),
+    })).sort((first, second) => {
+        const firstOrder = divisionOrder.indexOf(first.division);
+        const secondOrder = divisionOrder.indexOf(second.division);
+        if (firstOrder < 0 && secondOrder < 0) {
+            return first.division.localeCompare(second.division, "id");
+        }
+        if (firstOrder < 0) {
+            return 1;
+        }
+        if (secondOrder < 0) {
+            return -1;
+        }
+        return firstOrder - secondOrder;
+    });
+
+    return [
+        ...(coreMembers.length ? [{ title: "Pengurus Inti", members: coreMembers }] : []),
+        ...(programStudyMembers.length ? [{ title: "Program Studi", members: programStudyMembers }] : []),
+        ...(orderedDivisions.length ? [{ title: "Pengurus Harian", divisions: orderedDivisions }] : []),
+    ];
+}
+
+async function renderDirectoryMembers(grid, members, client) {
+    for (const member of members) {
+        const card = node("article", "directory-member");
+        const photo = node("div", "directory-photo");
+        photo.append(await createImage(
+            client,
+            member.photo_path,
+            null,
+            `Foto ${member.name}`,
+            "",
+            PROFILE_PLACEHOLDER
+        ));
+
+        const details = node("div", "directory-details");
+        details.append(
+            node("h3", "", member.name),
+            node("p", "directory-position", member.position)
+        );
+        if (member.period) {
+            details.append(node("p", "directory-period", `Periode ${member.period}`));
+        }
+        if (member.duties) {
+            details.append(node("p", "directory-duties", member.duties));
+        }
+        card.append(photo, details);
+        grid.append(card);
+    }
+}
+
 async function renderDirectory(container, members, client) {
     if (!container) {
         return;
@@ -120,48 +215,23 @@ async function renderDirectory(container, members, client) {
         return;
     }
 
-    const groups = new Map();
-    members.forEach((member) => {
-        const division = member.division || "Pengurus Harian";
-        if (!groups.has(division)) {
-            groups.set(division, []);
-        }
-        groups.get(division).push(member);
-    });
-
-    for (const [division, divisionMembers] of groups) {
+    for (const group of getDirectorySections(members)) {
         const section = node("section", "directory-division");
-        section.append(node("h2", "", division));
-        const grid = node("div", "division-members");
-
-        for (const member of divisionMembers) {
-            const card = node("article", "directory-member");
-            const photo = node("div", "directory-photo");
-            photo.append(await createImage(
-                client,
-                member.photo_path,
-                null,
-                `Foto ${member.name}`,
-                "",
-                PROFILE_PLACEHOLDER
-            ));
-
-            const details = node("div", "directory-details");
-            details.append(
-                node("h3", "", member.name),
-                node("p", "directory-position", member.position)
-            );
-            if (member.period) {
-                details.append(node("p", "directory-period", `Periode ${member.period}`));
+        section.append(node("h2", "", group.title));
+        if (group.members) {
+            const grid = node("div", "division-members");
+            await renderDirectoryMembers(grid, group.members, client);
+            section.append(grid);
+        } else {
+            for (const division of group.divisions) {
+                const divisionSection = node("section", "directory-subdivision");
+                divisionSection.append(node("h3", "", division.division));
+                const grid = node("div", "division-members");
+                await renderDirectoryMembers(grid, division.members, client);
+                divisionSection.append(grid);
+                section.append(divisionSection);
             }
-            if (member.duties) {
-                details.append(node("p", "directory-duties", member.duties));
-            }
-            card.append(photo, details);
-            grid.append(card);
         }
-
-        section.append(grid);
         container.append(section);
     }
 }
@@ -199,6 +269,136 @@ async function renderActivities(container, activities, photos, client) {
         );
         card.append(imageArea, content);
         container.append(card);
+    }
+}
+
+function getUpcomingActivities(activities, today, limit = 8) {
+    return activities
+        .filter((activity) => activity.event_date && activity.event_date >= today)
+        .sort((first, second) =>
+            first.event_date.localeCompare(second.event_date)
+            || first.title.localeCompare(second.title, "id")
+        )
+        .slice(0, limit);
+}
+
+function groupActivityMedia(mediaItems) {
+    const groups = new Map();
+    mediaItems.forEach((media) => {
+        if (!groups.has(media.activity_id)) {
+            groups.set(media.activity_id, []);
+        }
+        groups.get(media.activity_id).push(media);
+    });
+    return groups;
+}
+
+function localDateValue() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function renderUpcomingAgenda(container, activities) {
+    if (!container) {
+        return;
+    }
+    container.replaceChildren();
+    const upcoming = getUpcomingActivities(activities, localDateValue());
+    if (!upcoming.length) {
+        setStatus(container, "Belum ada agenda mendatang yang dipublikasikan.");
+        return;
+    }
+
+    upcoming.forEach((activity) => {
+        const item = node("article", "agenda-item");
+        const date = node("time", "agenda-date", formatDate(activity.event_date));
+        date.dateTime = activity.event_date;
+        const details = node("div", "agenda-details");
+        details.append(
+            node("p", "agenda-category", activity.category || "Kegiatan"),
+            node("h3", "", activity.title),
+            node("p", "", activity.description || "Informasi kegiatan.")
+        );
+        item.append(date, details);
+        container.append(item);
+    });
+}
+
+async function renderActivityMediaFolders(container, mediaItems, activities, client) {
+    if (!container) {
+        return;
+    }
+    container.replaceChildren();
+    const groups = groupActivityMedia(mediaItems);
+    if (!groups.size) {
+        setStatus(container, "Dokumentasi kegiatan akan ditampilkan di sini.");
+        return;
+    }
+
+    const activityById = new Map(activities.map((activity) => [activity.id, activity]));
+    for (const [activityId, items] of groups) {
+        const activity = activityById.get(activityId);
+        if (!activity) {
+            continue;
+        }
+        const folder = node("details", "public-activity-folder");
+        const summary = node(
+            "summary",
+            "",
+            `${activity.title} · ${items.length} dokumentasi`
+        );
+        const contents = node("div", "public-activity-media-grid");
+        folder.append(summary, contents);
+
+        const signedResult = await client.storage.from("hmpssi-media")
+            .createSignedUrls(items.map((media) => media.storage_path), 3600);
+        if (signedResult.error) {
+            throw signedResult.error;
+        }
+        if (!Array.isArray(signedResult.data) || signedResult.data.length !== items.length) {
+            throw new Error("Tautan dokumentasi tidak lengkap.");
+        }
+        for (const [index, media] of items.entries()) {
+            const signedFile = signedResult.data[index];
+            if (!signedFile?.signedUrl || signedFile.error) {
+                throw new Error(signedFile?.error || `Tautan file "${media.file_name}" gagal dibuat.`);
+            }
+            const link = node("a", "public-activity-media");
+            link.href = signedFile.signedUrl;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            if (media.content_type.startsWith("image/")) {
+                const image = node("img");
+                image.src = signedFile.signedUrl;
+                image.alt = media.caption || media.file_name;
+                image.loading = "lazy";
+                image.decoding = "async";
+                image.addEventListener("error", () => {
+                    image.src = EVENT_PLACEHOLDER;
+                }, { once: true });
+                link.append(image);
+            } else {
+                link.append(node(
+                    "span",
+                    "public-activity-file-icon",
+                    media.content_type.startsWith("video/") ? "VIDEO" : "DOKUMEN"
+                ));
+            }
+            const info = node("span", "public-activity-media-info");
+            info.append(
+                node("strong", "", media.file_name),
+                node("span", "activity-date-tag", formatDate(media.documented_on))
+            );
+            if (media.caption) {
+                info.append(node("span", "", media.caption));
+            }
+            link.append(info);
+            contents.append(link);
+        }
+        container.append(folder);
     }
 }
 
@@ -419,15 +619,21 @@ function setupGalleryFilters() {
 }
 
 function getHomepageLeaders(members) {
-    const leadershipPositions = new Set([
-        "ketua umum",
-        "sekretaris umum",
-        "bendahara umum",
+    const leadershipOrder = new Map([
+        ["kepala program studi", 0],
+        ["sekretaris program studi", 1],
+        ["ketua umum", 2],
+        ["sekretaris umum", 3],
+        ["bendahara umum", 4],
     ]);
 
     return members.filter((member) => {
         const position = String(member.position || "").replace(/\s+/g, " ").trim().toLowerCase();
-        return member.is_featured && leadershipPositions.has(position);
+        return member.is_featured && leadershipOrder.has(position);
+    }).sort((first, second) => {
+        const firstPosition = String(first.position || "").replace(/\s+/g, " ").trim().toLowerCase();
+        const secondPosition = String(second.position || "").replace(/\s+/g, " ").trim().toLowerCase();
+        return leadershipOrder.get(firstPosition) - leadershipOrder.get(secondPosition);
     });
 }
 
@@ -438,9 +644,11 @@ async function loadPublicContent() {
     const galleryGrid = document.getElementById("galleryGrid");
     const galleryFilters = document.getElementById("galleryFilters");
     const galleryMarquee = document.getElementById("galleryMarquee");
+    const upcomingAgenda = document.getElementById("upcomingAgenda");
+    const activityMediaFolders = document.getElementById("activityMediaFolders");
     const directory = document.getElementById("directoryGrid");
 
-    [activityGrid, programGrid, featuredMembers, galleryGrid, galleryMarquee, directory].forEach((container) => {
+    [activityGrid, programGrid, featuredMembers, galleryGrid, galleryMarquee, upcomingAgenda, activityMediaFolders, directory].forEach((container) => {
         if (container) {
             setStatus(container, "Memuat konten...");
         }
@@ -451,7 +659,7 @@ async function loadPublicContent() {
 
     try {
         const client = await window.hmpssiSupabaseReady;
-        const [membersResult, programsResult, activitiesResult, photosResult] = await Promise.all([
+        const [membersResult, programsResult, activitiesResult, photosResult, activityMediaResult] = await Promise.all([
             client.from("members").select("id,name,position,division,duties,period,photo_path,sort_order,is_featured")
                 .eq("published", true).is("archived_at", null).order("sort_order").limit(200),
             client.from("programs").select("id,title,description,period,sort_order")
@@ -460,6 +668,10 @@ async function loadPublicContent() {
                 .eq("published", true).is("archived_at", null).order("event_date", { ascending: false }).limit(100),
             client.from("gallery_photos").select("id,activity_id,storage_path,image_url,alt_text,caption,sort_order")
                 .eq("published", true).is("archived_at", null).order("sort_order").limit(300),
+            client.from("activity_media")
+                .select("id,activity_id,storage_path,file_name,content_type,documented_on,caption")
+                .eq("published", true).is("archived_at", null)
+                .order("documented_on", { ascending: false }).limit(500),
         ]);
 
         const results = [membersResult, programsResult, activitiesResult, photosResult];
@@ -467,21 +679,32 @@ async function loadPublicContent() {
         if (failed) {
             throw failed.error;
         }
+        if (activityMediaResult.error
+            && activityMediaResult.error.code !== "42P01"
+            && activityMediaResult.error.code !== "PGRST205") {
+            throw activityMediaResult.error;
+        }
+        if (activityMediaResult.error) {
+            console.warn("Migrasi dokumentasi kegiatan belum dijalankan di Supabase.");
+        }
 
         const members = membersResult.data || [];
         const programs = programsResult.data || [];
         const activities = activitiesResult.data || [];
         const photos = photosResult.data || [];
+        const activityMedia = activityMediaResult.data || [];
 
         await renderMembers(featuredMembers, getHomepageLeaders(members), client);
         await renderDirectory(directory, members, client);
         await renderActivities(activityGrid, activities, photos, client);
+        renderUpcomingAgenda(upcomingAgenda, activities);
         renderPrograms(programGrid, programs);
         await renderGallery(galleryGrid, galleryFilters, photos, activities, client);
+        await renderActivityMediaFolders(activityMediaFolders, activityMedia, activities, client);
         await renderGalleryMarquee(galleryMarquee, photos, client);
     } catch (error) {
         console.error("Konten publik gagal dimuat.", error);
-        [activityGrid, programGrid, featuredMembers, galleryGrid, galleryMarquee, directory].forEach((container) => {
+        [activityGrid, programGrid, featuredMembers, galleryGrid, galleryMarquee, upcomingAgenda, activityMediaFolders, directory].forEach((container) => {
             setStatus(container, "Konten belum dapat dimuat. Silakan coba lagi nanti.");
         });
     }

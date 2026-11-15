@@ -108,6 +108,12 @@ header p {
     border-bottom: 1px solid var(--border-strong);
 }
 
+.directory-subdivision > h3 {
+    margin: 0 0 0.9rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+}
+
 .division-members {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));

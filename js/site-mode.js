@@ -59,7 +59,8 @@
         const heading = document.createElement("h1");
         heading.textContent = "Website sedang dalam pemeliharaan";
         const message = document.createElement("p");
-        message.textContent = "Kami sedang melakukan pembaruan. Silakan kembali beberapa saat lagi.";
+        message.textContent = result.maintenanceNote.trim()
+            || "Kami sedang melakukan pembaruan. Silakan kembali beberapa saat lagi.";
         notice.append(eyebrow, heading, message);
         document.body.replaceChildren(notice);
     }

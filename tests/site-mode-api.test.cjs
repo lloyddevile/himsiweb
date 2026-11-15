@@ -43,16 +43,16 @@ test("site mode endpoint returns the public mode without exposing credentials", 
     process.env.SUPABASE_ANON_KEY = "public-key";
     process.env.SUPABASE_SERVICE_ROLE_KEY = "server-secret";
     global.fetch = async (url, options) => {
-        assert.equal(url.toString(), "https://project.supabase.co/rest/v1/site_settings?setting_key=eq.website_mode&select=setting_value");
+        assert.equal(url.toString(), "https://project.supabase.co/rest/v1/site_settings?setting_key=eq.website_mode&select=setting_value%2Cmaintenance_note");
         assert.equal(options.headers.apikey, "public-key");
-        return new Response(JSON.stringify([{ setting_value: "maintenance" }]), { status: 200 });
+        return new Response(JSON.stringify([{ setting_value: "maintenance", maintenance_note: "Sedang pemeliharaan terjadwal." }]), { status: 200 });
     };
 
     const response = makeResponse();
     await siteModeHandler({ method: "GET" }, response);
 
     assert.equal(response.statusCode, 200);
-    assert.deepEqual(response.body, { mode: "maintenance" });
+    assert.deepEqual(response.body, { mode: "maintenance", maintenanceNote: "Sedang pemeliharaan terjadwal." });
     assert.equal(response.body.serviceRoleKey, undefined);
     assert.equal(response.headers["Cache-Control"], "no-store");
 });

@@ -1,11 +1,33 @@
 const MEDIA_BUCKET = "hmpssi-media";
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const MAX_ACTIVITY_MEDIA_SIZE = 10 * 1024 * 1024;
+const MAX_ACTIVITY_MEDIA_FILES = 10;
 const MAX_EDIT_SOURCE_SIZE = 50 * 1024 * 1024;
 const MAX_EDITED_IMAGE_DIMENSION = 4096;
+const ADMIN_ACCOUNT_CREATOR_EMAIL = "muhammadfatiha83@gmail.com";
+const ADMIN_LOGIN_EMAIL_DOMAIN = "admin.hmpssi.invalid";
+const UNIQUE_MEMBER_POSITIONS = new Set([
+    "ketua umum",
+    "sekretaris umum",
+    "bendahara umum",
+    "kepala program studi",
+    "sekretaris program studi",
+]);
 const ALLOWED_IMAGE_TYPES = new Map([
     ["image/jpeg", "jpg"],
     ["image/png", "png"],
     ["image/webp", "webp"],
+]);
+const ALLOWED_ACTIVITY_MEDIA_TYPES = new Map([
+    ["image/jpeg", "jpg"],
+    ["image/png", "png"],
+    ["image/webp", "webp"],
+    ["application/pdf", "pdf"],
+    ["video/mp4", "mp4"],
+    ["video/webm", "webm"],
+    ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"],
+    ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"],
+    ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx"],
 ]);
 const AUDIT_ACTION_LABELS = {
     INSERT: "Dibuat",
@@ -17,6 +39,8 @@ const AUDIT_ENTITY_LABELS = {
     programs: "Program kerja",
     activities: "Kegiatan",
     gallery_photos: "Foto galeri",
+    activity_media: "Dokumentasi kegiatan",
+    activity_media: "Dokumentasi kegiatan",
     contact_messages: "Pesan masuk",
     site_settings: "Mode website",
 };
@@ -54,6 +78,123 @@ async function storageUrl(path) {
         throw result.error;
     }
     return result.data.signedUrl;
+}
+
+function getLocalDateInputValue(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function activityMediaPath(activityId, documentedOn, fileId, extension) {
+    return `activities/${activityId}/${documentedOn}/${fileId}.${extension}`;
+}
+
+function isActivityMediaTableUnavailable(error) {
+    return error?.code === "42P01" || error?.code === "PGRST205";
+}
+
+function normalizeMemberValue(value) {
+    return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function getMemberPositionConflict(members, candidate, editingId = null) {
+    const position = normalizeMemberValue(candidate.position);
+    const division = normalizeMemberValue(candidate.division);
+    const duplicate = members.some((member) => {
+        if (member.id === editingId || member.archived_at) {
+            return false;
+        }
+        const existingPosition = normalizeMemberValue(member.position);
+        if (UNIQUE_MEMBER_POSITIONS.has(position)) {
+            return existingPosition === position;
+        }
+        return position === "kepala divisi"
+            && /^kepala divisi(?:\s|$)/.test(existingPosition)
+            && normalizeMemberValue(member.division) === division;
+    });
+
+    if (!duplicate) {
+        return null;
+    }
+    if (position === "kepala divisi") {
+        return `Divisi ${candidate.division} sudah memiliki Kepala Divisi.`;
+    }
+    return `Jabatan ${candidate.position} hanya boleh dimiliki satu anggota.`;
+}
+
+function memberPositionConflictMessage(position, division, error = null) {
+    const errorText = [error?.constraint, error?.message, error?.details].filter(Boolean).join(" ").toLowerCase();
+    if (normalizeMemberValue(position) === "kepala divisi"
+        || errorText.includes("members_unique_kadiv_per_division_idx")) {
+        return `Divisi ${division || "tersebut"} sudah memiliki Kepala Divisi.`;
+    }
+    return `Jabatan ${position || "tersebut"} hanya boleh dimiliki satu anggota.`;
+}
+
+async function validateMemberPosition(candidate, editingId = null) {
+    const result = await client.from("members")
+        .select("id,position,division,archived_at")
+        .is("archived_at", null)
+        .limit(1000);
+    if (result.error) {
+        throw result.error;
+    }
+
+    const message = getMemberPositionConflict(result.data, candidate, editingId);
+    if (message) {
+        throw new Error(message);
+    }
+}
+
+function syncMemberDivisionField() {
+    const position = normalizeMemberValue(document.getElementById("memberPosition").value);
+    const divisionField = document.getElementById("memberDivisionField");
+    const divisionSelect = document.getElementById("memberDivisionSelect");
+    const divisionInput = document.getElementById("memberDivision");
+    const fixedDivision = UNIQUE_MEMBER_POSITIONS.has(position)
+        ? position.includes("program studi") ? "Program Studi" : "Pengurus Inti"
+        : null;
+
+    if (fixedDivision) {
+        divisionField.hidden = true;
+        divisionSelect.required = false;
+        divisionInput.value = fixedDivision;
+        return;
+    }
+
+    divisionField.hidden = false;
+    divisionSelect.required = true;
+    divisionInput.value = divisionSelect.value;
+}
+
+function addLegacyOption(select, value, label) {
+    if (!value || Array.from(select.options).some((option) => option.value === value)) {
+        return;
+    }
+    const option = new Option(`${label}: ${value}`, value);
+    option.dataset.legacy = "true";
+    select.add(option);
+}
+
+function connectMemberPositionFields() {
+    const form = document.getElementById("memberForm");
+    const position = document.getElementById("memberPosition");
+    const division = document.getElementById("memberDivisionSelect");
+
+    position.addEventListener("change", syncMemberDivisionField);
+    division.addEventListener("change", syncMemberDivisionField);
+    form.addEventListener("reset", () => {
+        setTimeout(() => {
+            [position, division].forEach((select) => {
+                Array.from(select.options).filter((option) => option.dataset.legacy === "true")
+                    .forEach((option) => option.remove());
+            });
+            syncMemberDivisionField();
+        }, 0);
+    });
+    syncMemberDivisionField();
 }
 
 function setTab(tab) {
@@ -126,6 +267,13 @@ async function showDashboard() {
         return;
     }
 
+    const userResult = await client.auth.getUser();
+    if (userResult.error) {
+        throw userResult.error;
+    }
+    document.getElementById("adminAccountSettings").hidden =
+        userResult.data.user?.email?.toLowerCase() !== ADMIN_ACCOUNT_CREATOR_EMAIL;
+
     document.getElementById("loginPanel").hidden = true;
     document.getElementById("dashboardPanel").hidden = false;
     setStatus(document.getElementById("loginStatus"), "");
@@ -142,7 +290,8 @@ async function loadTab(tab) {
     } else if (tab === "activities") {
         await loadActivities();
     } else if (tab === "gallery") {
-        await Promise.all([loadActivities(), loadGallery()]);
+        await loadActivities();
+        await Promise.all([loadGallery(), loadActivityMedia()]);
     } else if (tab === "messages") {
         await loadMessages();
     } else if (tab === "site-mode") {
@@ -156,14 +305,16 @@ async function loadTab(tab) {
 
 function updateSiteModeDescription(mode) {
     const description = document.getElementById("siteModeDescription");
+    const maintenanceNoteField = document.getElementById("maintenanceNoteField");
+    maintenanceNoteField.hidden = mode !== "maintenance";
     description.textContent = mode === "maintenance"
-        ? "Halaman publik akan menampilkan pemberitahuan maintenance. Dashboard admin tetap tersedia."
+        ? "Halaman publik akan menampilkan pemberitahuan dan catatan maintenance. Dashboard admin tetap tersedia."
         : "Website dapat diakses pengunjung seperti biasa.";
 }
 
 async function loadSiteMode() {
     const result = await client.from("site_settings")
-        .select("setting_value")
+        .select("setting_value, maintenance_note")
         .eq("setting_key", "website_mode")
         .single();
     if (result.error) {
@@ -175,6 +326,7 @@ async function loadSiteMode() {
         throw new Error("Mode website di database tidak valid.");
     }
     document.getElementById("siteMode").value = mode;
+    document.getElementById("maintenanceNote").value = result.data.maintenance_note || "";
     updateSiteModeDescription(mode);
 }
 
@@ -226,8 +378,11 @@ function editMember(member) {
     photoInput.dispatchEvent(new Event("change", { bubbles: true }));
     form.elements.namedItem("id").value = member.id;
     form.elements.namedItem("name").value = member.name;
+    addLegacyOption(document.getElementById("memberPosition"), member.position, "Jabatan lama");
     form.elements.namedItem("position").value = member.position;
-    form.elements.namedItem("division").value = member.division;
+    addLegacyOption(document.getElementById("memberDivisionSelect"), member.division, "Divisi lama");
+    document.getElementById("memberDivisionSelect").value = member.division;
+    syncMemberDivisionField();
     form.elements.namedItem("duties").value = member.duties || "";
     form.elements.namedItem("period").value = member.period || "";
     form.elements.namedItem("photo_path").value = member.photo_path || "";
@@ -291,11 +446,19 @@ async function loadActivities() {
     }
 
     cachedActivities = result.data;
-    const activitySelect = document.querySelector('#galleryForm select[name="activity_id"]');
+    const activitySelect = document.querySelector('#activityMediaForm select[name="activity_id"]');
     if (activitySelect) {
         activitySelect.replaceChildren(new Option("Tanpa kegiatan terkait", ""));
         cachedActivities.filter((activity) => !activity.archived_at).forEach((activity) => {
             activitySelect.add(new Option(activity.title, activity.id));
+        });
+    }
+
+    const mediaActivitySelect = document.querySelector('#activityMediaForm select[name="activity_id"]');
+    if (mediaActivitySelect) {
+        mediaActivitySelect.replaceChildren(new Option("Pilih kegiatan", ""));
+        cachedActivities.filter((activity) => !activity.archived_at).forEach((activity) => {
+            mediaActivitySelect.add(new Option(activity.title, activity.id));
         });
     }
 
@@ -373,6 +536,115 @@ async function loadGallery() {
     }
 }
 
+function createActivityMediaCard(media) {
+    const card = element("article", "record-card activity-media-record");
+    const details = element("div", "activity-media-details");
+    const isImage = media.content_type.startsWith("image/");
+    const isVideo = media.content_type.startsWith("video/");
+
+    if (isImage) {
+        const image = element("img", "activity-media-preview");
+        image.src = media.previewUrl;
+        image.alt = media.caption || media.file_name;
+        image.loading = "lazy";
+        details.append(image);
+    } else {
+        details.append(element("span", "activity-media-file-type", isVideo ? "VIDEO" : "DOKUMEN"));
+    }
+
+    details.append(
+        element("h4", "", media.file_name),
+        element("p", "", media.caption || "Tanpa keterangan"),
+        element("p", "record-meta", `${media.documented_on} · ${media.content_type} · ${statusLabel(media)}`)
+    );
+    const actions = element("div", "record-actions");
+    const download = element("a", "button button-secondary", "Buka / unduh");
+    download.href = media.downloadUrl;
+    download.target = "_blank";
+    download.rel = "noopener noreferrer";
+    actions.append(
+        download,
+        createAction(media.published ? "Sembunyikan" : "Publikasikan", () => togglePublished("activity_media", media.id, media.published)),
+        createAction(media.archived_at ? "Pulihkan" : "Arsipkan", () => archiveRecord("activity_media", media.id, media.archived_at)),
+        createAction("Hapus dokumentasi", () => deleteRecord(
+            "activity_media",
+            media.id,
+            "Dokumentasi kegiatan",
+            media.storage_path,
+            media.file_name
+        ), "button button-danger")
+    );
+    card.append(details, actions);
+    return card;
+}
+
+async function loadActivityMedia() {
+    const result = await client.from("activity_media")
+        .select("id,activity_id,storage_path,file_name,content_type,documented_on,caption,published,archived_at")
+        .order("documented_on", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(500);
+    if (isActivityMediaTableUnavailable(result.error)) {
+        document.getElementById("activityMediaFoldersList").replaceChildren(
+            element("p", "content-status", "Jalankan migrasi activity_media di Supabase untuk mengaktifkan folder dokumentasi.")
+        );
+        return;
+    }
+    if (result.error) {
+        throw result.error;
+    }
+
+    const list = document.getElementById("activityMediaFoldersList");
+    list.replaceChildren();
+    if (!result.data.length) {
+        list.append(element("p", "content-status", "Belum ada dokumentasi per kegiatan."));
+        return;
+    }
+
+    const groups = new Map();
+    result.data.forEach((media) => {
+        if (!groups.has(media.activity_id)) {
+            groups.set(media.activity_id, []);
+        }
+        groups.get(media.activity_id).push(media);
+    });
+
+    if (table === "members") {
+        await validateMemberPosition(payload, id);
+    }
+
+    for (const [activityId, mediaItems] of groups) {
+        const activity = cachedActivities.find((item) => item.id === activityId);
+        const folder = element("details", "activity-media-folder");
+        const summary = element(
+            "summary",
+            "",
+            `${activity?.title || "Kegiatan tidak ditemukan"} · ${mediaItems.length} file`
+        );
+        const folderContents = element("div", "activity-media-folder-contents");
+        folder.append(summary, folderContents);
+
+        const signedResult = await client.storage.from(MEDIA_BUCKET)
+            .createSignedUrls(mediaItems.map((media) => media.storage_path), 3600);
+        if (signedResult.error) {
+            throw signedResult.error;
+        }
+        if (!Array.isArray(signedResult.data) || signedResult.data.length !== mediaItems.length) {
+            throw new Error("Tautan dokumentasi tidak lengkap.");
+        }
+        for (const [index, media] of mediaItems.entries()) {
+            const signedFile = signedResult.data[index];
+            if (!signedFile?.signedUrl || signedFile.error) {
+                throw new Error(signedFile?.error || `Tautan file "${media.file_name}" gagal dibuat.`);
+            }
+            media.downloadUrl = signedFile.signedUrl;
+            media.previewUrl = media.downloadUrl;
+            folderContents.append(createActivityMediaCard(media));
+        }
+        list.append(folder);
+    }
+}
+
 async function loadMessages() {
     const result = await client.from("contact_messages")
         .select("id,name,email,subject,message,is_read,archived_at,created_at")
@@ -445,6 +717,9 @@ async function archiveRecord(table, id, archivedAt) {
     const nextValue = archivedAt ? null : new Date().toISOString();
     const result = await client.from(table).update({ archived_at: nextValue }).eq("id", id);
     if (result.error) {
+        if (table === "members" && result.error.code === "23505") {
+            throw new Error("Anggota tidak dapat dipulihkan karena jabatan atau divisinya sudah terisi.");
+        }
         throw result.error;
     }
     await refreshAfterMutation(nextValue ? "Data diarsipkan." : "Data dipulihkan.");
@@ -950,6 +1225,9 @@ async function saveEntity(form, table, fields, folder, fileField) {
         if (uploadedPath) {
             await client.storage.from(MEDIA_BUCKET).remove([uploadedPath]);
         }
+        if (table === "members" && result.error.code === "23505") {
+            throw new Error(memberPositionConflictMessage(payload.position, payload.division, result.error));
+        }
         throw result.error;
     }
 
@@ -1024,6 +1302,81 @@ async function uploadGalleryPhotos(form) {
     await refreshAfterMutation(`Data tersimpan. ${files.length} foto berhasil diunggah.`);
 }
 
+async function uploadActivityMedia(form) {
+    const files = Array.from(form.elements.namedItem("files").files);
+    const activityId = form.elements.namedItem("activity_id").value;
+    const documentedOn = form.elements.namedItem("documented_on").value;
+    const caption = form.elements.namedItem("caption").value.trim();
+    const published = form.elements.namedItem("published").checked;
+
+    if (!activityId || !cachedActivities.some((activity) => activity.id === activityId && !activity.archived_at)) {
+        throw new Error("Pilih kegiatan yang masih aktif.");
+    }
+    if (!documentedOn || !/^\d{4}-\d{2}-\d{2}$/.test(documentedOn)) {
+        throw new Error("Isi tanggal dokumentasi yang valid.");
+    }
+    if (!files.length || files.length > MAX_ACTIVITY_MEDIA_FILES) {
+        throw new Error(`Pilih 1 sampai ${MAX_ACTIVITY_MEDIA_FILES} file untuk satu kali unggah.`);
+    }
+    if (caption.length > 500) {
+        throw new Error("Keterangan maksimal 500 karakter.");
+    }
+
+    const invalidFile = files.find((file) =>
+        !ALLOWED_ACTIVITY_MEDIA_TYPES.has(file.type)
+        || file.size === 0
+        || file.size > MAX_ACTIVITY_MEDIA_SIZE
+    );
+    if (invalidFile) {
+        throw new Error(`"${invalidFile.name}" memiliki format yang tidak didukung atau melebihi 10 MB.`);
+    }
+
+    const uploadedPaths = [];
+    try {
+        const records = [];
+        for (const file of files) {
+            const extension = ALLOWED_ACTIVITY_MEDIA_TYPES.get(file.type);
+            const path = activityMediaPath(activityId, documentedOn, crypto.randomUUID(), extension);
+            const uploadResult = await client.storage.from(MEDIA_BUCKET).upload(path, file, {
+                contentType: file.type,
+                cacheControl: "3600",
+                upsert: false,
+            });
+            if (uploadResult.error) {
+                throw uploadResult.error;
+            }
+            uploadedPaths.push(path);
+            records.push({
+                activity_id: activityId,
+                storage_path: path,
+                file_name: file.name.trim().replace(/[\\/]/g, "_").slice(0, 255) || `dokumentasi.${extension}`,
+                content_type: file.type,
+                documented_on: documentedOn,
+                caption,
+                published,
+            });
+        }
+
+        const result = await client.from("activity_media").insert(records);
+        if (result.error) {
+            throw result.error;
+        }
+    } catch (error) {
+        if (uploadedPaths.length) {
+            const cleanup = await client.storage.from(MEDIA_BUCKET).remove(uploadedPaths);
+            if (cleanup.error) {
+                console.error("Sebagian dokumentasi gagal dibersihkan setelah batch unggah gagal.", cleanup.error);
+                throw new Error("Unggah gagal dan sebagian file perlu dibersihkan dari Supabase Storage.");
+            }
+        }
+        throw error;
+    }
+
+    form.reset();
+    form.elements.namedItem("documented_on").value = getLocalDateInputValue();
+    await refreshAfterMutation(`Data tersimpan. ${files.length} file berhasil diunggah.`);
+}
+
 async function deletePhoto(photo) {
     await deleteRecord(
         "gallery_photos",
@@ -1037,9 +1390,11 @@ async function deletePhoto(photo) {
 async function deleteRecord(table, id, label, storagePath = null, recordName = "") {
     const dialog = document.getElementById("deleteConfirmDialog");
     document.getElementById("deleteConfirmName").textContent = recordName || label;
-    document.getElementById("deleteConfirmMessage").textContent = `${label} ini akan dihapus secara permanen.`;
+    document.getElementById("deleteConfirmMessage").textContent = table === "activities"
+        ? `${label} dan seluruh catatan dokumentasinya akan dihapus secara permanen.`
+        : `${label} ini akan dihapus secara permanen.`;
     document.getElementById("deleteConfirmWarning").textContent = storagePath
-        ? "Tindakan ini tidak dapat dibatalkan. File foto terkait juga akan dihapus dari penyimpanan."
+        ? "Tindakan ini tidak dapat dibatalkan. File terkait juga akan dihapus dari penyimpanan."
         : "Tindakan ini tidak dapat dibatalkan dan data tidak dapat dipulihkan.";
     dialog.returnValue = "";
     const confirmed = await new Promise((resolve) => {
@@ -1048,6 +1403,17 @@ async function deleteRecord(table, id, label, storagePath = null, recordName = "
     });
     if (!confirmed) {
         return;
+    }
+
+    let relatedMediaPaths = [];
+    if (table === "activities") {
+        const mediaResult = await client.from("activity_media")
+            .select("storage_path")
+            .eq("activity_id", id);
+        if (mediaResult.error && !isActivityMediaTableUnavailable(mediaResult.error)) {
+            throw mediaResult.error;
+        }
+        relatedMediaPaths = mediaResult.data?.map((media) => media.storage_path) || [];
     }
 
     const result = await client.from(table).delete().eq("id", id).select("id").single();
@@ -1063,6 +1429,17 @@ async function deleteRecord(table, id, label, storagePath = null, recordName = "
             }
         } catch (error) {
             console.error(`${label} dihapus, tetapi file terkait belum terhapus dari Storage.`, error);
+            storageCleanupFailed = true;
+        }
+    }
+    if (relatedMediaPaths.length) {
+        try {
+            const storageResult = await client.storage.from(MEDIA_BUCKET).remove(relatedMediaPaths);
+            if (storageResult.error) {
+                throw storageResult.error;
+            }
+        } catch (error) {
+            console.error("Kegiatan dihapus, tetapi sebagian dokumentasi belum terhapus dari Storage.", error);
             storageCleanupFailed = true;
         }
     }
@@ -1126,6 +1503,24 @@ function connectGalleryForm() {
     });
 }
 
+function connectActivityMediaForm() {
+    const form = document.getElementById("activityMediaForm");
+    form.elements.namedItem("documented_on").value = getLocalDateInputValue();
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        setStatus(dashboardStatus, "Mengunggah dokumentasi...");
+        setFormBusy(form, true);
+        try {
+            await uploadActivityMedia(form);
+        } catch (error) {
+            console.error("Unggah dokumentasi kegiatan gagal.", error);
+            setStatus(dashboardStatus, error.message || "Dokumentasi gagal diunggah.", true);
+        } finally {
+            setFormBusy(form, false);
+        }
+    });
+}
+
 function connectLogin() {
     const form = document.getElementById("loginForm");
     const status = document.getElementById("loginStatus");
@@ -1134,8 +1529,12 @@ function connectLogin() {
         setStatus(status, "");
         setFormBusy(form, true);
         try {
+            const identifier = form.elements.namedItem("username").value.trim();
+            const email = identifier.includes("@")
+                ? identifier
+                : `${identifier.toLowerCase()}@${ADMIN_LOGIN_EMAIL_DOMAIN}`;
             const result = await client.auth.signInWithPassword({
-                email: form.elements.namedItem("email").value.trim(),
+                email,
                 password: form.elements.namedItem("password").value,
             });
             if (result.error) {
@@ -1151,8 +1550,70 @@ function connectLogin() {
     });
 }
 
+function connectAdminAccountForm() {
+    const form = document.getElementById("adminAccountForm");
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const username = form.elements.namedItem("username").value.trim().toLowerCase();
+        const password = form.elements.namedItem("password").value;
+        if (!/^[a-z0-9](?:[a-z0-9._-]{1,30}[a-z0-9])$/.test(username) || username.includes("..")) {
+            setStatus(dashboardStatus, "Username harus 3–32 karakter, diawali dan diakhiri huruf atau angka.", true);
+            return;
+        }
+        if (password.length < 12 || password.length > 128) {
+            setStatus(dashboardStatus, "Kata sandi harus terdiri dari 12–128 karakter.", true);
+            return;
+        }
+
+        setFormBusy(form, true);
+        setStatus(dashboardStatus, "Membuat akun admin...");
+        try {
+            const sessionResult = await client.auth.getSession();
+            if (sessionResult.error) {
+                throw sessionResult.error;
+            }
+            const accessToken = sessionResult.data.session?.access_token;
+            if (!accessToken) {
+                throw new Error("Sesi admin sudah berakhir. Silakan masuk kembali.");
+            }
+
+            const response = await fetch("/api/admin-users", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({ username, password }),
+            });
+            let payload;
+            try {
+                payload = await response.json();
+            } catch {
+                payload = null;
+            }
+            if (!response.ok) {
+                const messages = {
+                    username_taken: "Username tersebut sudah digunakan.",
+                    forbidden: "Hanya admin utama yang diizinkan dapat membuat akun admin.",
+                    invalid_admin_details: "Username atau kata sandi tidak memenuhi ketentuan.",
+                };
+                throw new Error(messages[payload?.error] || "Akun admin gagal dibuat. Periksa konfigurasi server dan coba lagi.");
+            }
+
+            form.reset();
+            setStatus(dashboardStatus, `Akun admin "${username}" berhasil dibuat.`);
+        } catch (error) {
+            console.error("Pembuatan akun admin gagal.", error);
+            setStatus(dashboardStatus, error.message || "Akun admin gagal dibuat. Silakan coba lagi.", true);
+        } finally {
+            setFormBusy(form, false);
+        }
+    });
+}
+
 function connectDashboard() {
     dashboardStatus = document.getElementById("dashboardStatus");
+    connectMemberPositionFields();
     document.querySelectorAll(".tab-button").forEach((button) => {
         button.addEventListener("click", () => setTab(button.dataset.tab));
     });
@@ -1185,6 +1646,7 @@ function connectDashboard() {
         form.reset();
         setStatus(dashboardStatus, "Kata sandi berhasil diperbarui.");
     });
+    connectAdminAccountForm();
     document.getElementById("siteMode").addEventListener("change", (event) => {
         updateSiteModeDescription(event.currentTarget.value);
     });
@@ -1192,27 +1654,37 @@ function connectDashboard() {
         event.preventDefault();
         const form = event.currentTarget;
         const mode = form.elements.namedItem("setting_value").value;
+        const maintenanceNote = form.elements.namedItem("maintenance_note").value.trim();
         if (mode !== "public" && mode !== "maintenance") {
             setStatus(dashboardStatus, "Pilih mode website yang valid.", true);
+            return;
+        }
+        if (maintenanceNote.length > 500) {
+            setStatus(dashboardStatus, "Catatan maintenance maksimal 500 karakter.", true);
             return;
         }
 
         setFormBusy(form, true);
         try {
             const result = await client.from("site_settings")
-                .update({ setting_value: mode, updated_at: new Date().toISOString() })
+                .update({
+                    setting_value: mode,
+                    maintenance_note: maintenanceNote,
+                    updated_at: new Date().toISOString(),
+                })
                 .eq("setting_key", "website_mode")
-                .select("setting_value")
+                .select("setting_value, maintenance_note")
                 .single();
             if (result.error) {
                 throw result.error;
             }
 
             updateSiteModeDescription(result.data.setting_value);
+            document.getElementById("maintenanceNote").value = result.data.maintenance_note || "";
             setStatus(
                 dashboardStatus,
                 result.data.setting_value === "maintenance"
-                    ? "Mode maintenance aktif. Dashboard admin tetap dapat diakses."
+                    ? "Mode maintenance aktif dan catatan ditampilkan kepada pengunjung."
                     : "Mode public aktif. Website dapat diakses pengunjung."
             );
         } catch (error) {
@@ -1233,7 +1705,7 @@ function connectDashboard() {
     connectForm("activityForm", "activities", [
         "title", "description", "category", "event_date", "sort_order", "published",
     ]);
-    connectGalleryForm();
+    connectActivityMediaForm();
 }
 
 async function startAdmin() {

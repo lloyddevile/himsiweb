@@ -29,7 +29,7 @@ module.exports = async function handleSiteMode(req, res) {
 
     const settingsUrl = new URL("/rest/v1/site_settings", projectUrl.origin);
     settingsUrl.searchParams.set("setting_key", "eq.website_mode");
-    settingsUrl.searchParams.set("select", "setting_value");
+    settingsUrl.searchParams.set("select", "setting_value,maintenance_note");
 
     try {
         const response = await fetch(settingsUrl, {
@@ -45,13 +45,17 @@ module.exports = async function handleSiteMode(req, res) {
         }
 
         const rows = await response.json();
-        const mode = Array.isArray(rows) ? rows[0]?.setting_value : null;
+        const settings = Array.isArray(rows) ? rows[0] : null;
+        const mode = settings?.setting_value;
         if (mode !== "public" && mode !== "maintenance") {
             console.error("Supabase returned an invalid website mode.");
             return respond(res, 502, { error: "site_mode_unavailable" });
         }
 
-        return respond(res, 200, { mode });
+        const maintenanceNote = typeof settings.maintenance_note === "string"
+            ? settings.maintenance_note.slice(0, 500)
+            : "";
+        return respond(res, 200, { mode, maintenanceNote });
     } catch (error) {
         console.error("Site mode API could not reach Supabase.", error);
         return respond(res, 502, { error: "site_mode_unavailable" });

@@ -30,6 +30,9 @@ test("all admin data lists expose archive, restore, and permanent delete actions
     assert.match(adminScript, /dialog\.showModal\(\)/);
     assert.match(adminHtml, /value="cancel"[^>]*>Batalkan<\/button>/);
     assert.match(adminHtml, /value="confirm"[^>]*>Hapus permanen<\/button>/);
+    assert.match(adminScript, /archiveRecord\("activity_media"/);
+    assert.match(adminScript, /deleteRecord\(\s*"activity_media"/);
+    assert.match(adminScript, /createSignedUrls\(mediaItems\.map/);
 });
 
 test("contact messages permit permanent deletion by admins only", () => {
@@ -40,6 +43,13 @@ test("contact messages permit permanent deletion by admins only", () => {
 
     assert.match(migration, /grant delete on table public\.contact_messages to authenticated/i);
     assert.match(migration, /for delete to authenticated\s+using \(public\.is_admin\(\)\)/i);
+});
+
+test("maintenance mode form supports a bounded public-facing maintenance note", () => {
+    assert.match(adminHtml, /id="maintenanceNote" name="maintenance_note" rows="3" maxlength="500"/);
+    assert.match(adminScript, /\.select\("setting_value, maintenance_note"\)/);
+    assert.match(adminScript, /maintenance_note: maintenanceNote/);
+    assert.match(adminScript, /maintenanceNoteField\.hidden = mode !== "maintenance"/);
 });
 
 test("member photo editor supports crop selection, dragging, and wheel zoom", () => {

@@ -24,10 +24,10 @@
     <main class="admin-main">
         <section id="loginPanel" class="auth-card" aria-labelledby="loginTitle">
             <h1 id="loginTitle">Masuk Admin</h1>
-            <p>Akun admin hanya dapat digunakan setelah diundang.</p>
+            <p>Masuk menggunakan username dan kata sandi admin. Admin utama yang sudah terdaftar juga dapat memakai emailnya.</p>
             <form id="loginForm">
-                <label for="adminEmail">Email admin</label>
-                <input id="adminEmail" name="email" type="email" autocomplete="username" required>
+                <label for="adminUsername">Username admin</label>
+                <input id="adminUsername" name="username" type="text" autocomplete="username" maxlength="254" required>
                 <label for="adminPassword">Kata sandi</label>
                 <input id="adminPassword" name="password" type="password" autocomplete="current-password" required>
                 <button class="button button-primary" type="submit">Masuk</button>
@@ -49,6 +49,17 @@
                     <label for="newAdminPassword">Kata sandi baru (minimal 10 karakter)</label>
                     <input id="newAdminPassword" name="password" type="password" minlength="10" autocomplete="new-password" required>
                     <button class="button button-primary" type="submit">Simpan kata sandi</button>
+                </form>
+            </details>
+            <details id="adminAccountSettings" class="password-settings" hidden>
+                <summary>Buat akun admin</summary>
+                <p>Akun admin baru hanya dapat dibuat oleh admin utama yang diizinkan.</p>
+                <form id="adminAccountForm">
+                    <label for="newAdminUsername">Username (3–32 karakter: huruf, angka, titik, garis bawah, atau tanda hubung)</label>
+                    <input id="newAdminUsername" name="username" type="text" minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9]|[A-Za-z0-9]{3,32}" autocomplete="off" required>
+                    <label for="newAccountPassword">Kata sandi (minimal 12 karakter)</label>
+                    <input id="newAccountPassword" name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required>
+                    <button class="button button-primary" type="submit">Buat akun</button>
                 </form>
             </details>
 
@@ -92,8 +103,29 @@
                     <input type="hidden" name="id">
                     <input type="hidden" name="photo_path">
                     <label>Nama<input name="name" maxlength="120" required></label>
-                    <label>Jabatan<input name="position" maxlength="120" required></label>
-                    <label>Divisi<input name="division" maxlength="120" required></label>
+                    <label for="memberPosition">Jabatan
+                        <select id="memberPosition" name="position" required>
+                            <option value="">Pilih jabatan</option>
+                            <option value="Ketua Umum">Ketua Umum</option>
+                            <option value="Sekretaris Umum">Sekretaris Umum</option>
+                            <option value="Bendahara Umum">Bendahara Umum</option>
+                            <option value="Kepala Divisi">Kepala Divisi (Kadiv)</option>
+                            <option value="Kepala Program Studi">Kepala Program Studi</option>
+                            <option value="Sekretaris Program Studi">Sekretaris Program Studi</option>
+                            <option value="Anggota Divisi">Anggota Divisi</option>
+                        </select>
+                    </label>
+                    <input id="memberDivision" type="hidden" name="division">
+                    <label id="memberDivisionField" for="memberDivisionSelect">Divisi
+                        <select id="memberDivisionSelect" required>
+                            <option value="">Pilih divisi</option>
+                            <option value="Internal">Internal</option>
+                            <option value="Eksternal">Eksternal</option>
+                            <option value="Kesekretariatan">Kesekretariatan</option>
+                            <option value="Pemberdayaan Perempuan">Pemberdayaan Perempuan</option>
+                            <option value="Medinfo (Media dan Informasi)">Medinfo (Media dan Informasi)</option>
+                        </select>
+                    </label>
                     <label>Periode<input name="period" maxlength="40"></label>
                     <label class="form-wide">Tugas / keterangan<textarea name="duties" rows="3" maxlength="2000"></textarea></label>
                     <label>Urutan<input name="sort_order" type="number" value="0" min="0" max="9999"></label>
@@ -108,7 +140,7 @@
                             <p>Pilih foto lalu edit area crop dan ukuran hasil sebelum menyimpan.</p>
                         </div>
                     </div>
-                    <label class="check-label"><input name="is_featured" type="checkbox"> Tampilkan di beranda (jabatan inti saja)</label>
+                    <label class="check-label"><input name="is_featured" type="checkbox"> Tampilkan di beranda (pimpinan prodi dan pengurus inti)</label>
                     <label class="check-label"><input name="published" type="checkbox"> Publikasikan</label>
                     <div class="form-actions form-wide">
                         <button class="button button-primary" type="submit">Simpan anggota</button>
@@ -201,23 +233,29 @@
 
             <section class="dashboard-panel" data-panel="gallery" hidden>
                 <div class="panel-heading">
-                    <h2>Galeri kegiatan</h2>
-                    <p>Unggah foto JPEG, PNG, atau WebP (maks. 10 MB per file). Foto dapat dihapus permanen setelah konfirmasi.</p>
+                    <h2>Album dan dokumentasi kegiatan</h2>
+                    <p>Dokumentasi tersimpan dalam folder per kegiatan dan tanggal. Format gambar, PDF, video, serta dokumen Office; maksimal 10 MB per file.</p>
                 </div>
-                <form id="galleryForm" class="editor-form">
-                    <label>Kaitkan dengan kegiatan
-                        <select name="activity_id">
-                            <option value="">Tanpa kegiatan terkait</option>
+                <form id="activityMediaForm" class="editor-form">
+                    <label>Kegiatan
+                        <select name="activity_id" required>
                         </select>
                     </label>
-                    <label>Foto (bisa memilih beberapa)<input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple required></label>
-                    <label class="form-wide">Teks alternatif<textarea name="alt_text" rows="2" maxlength="160" required></textarea></label>
-                    <label class="form-wide">Keterangan<textarea name="caption" rows="2" maxlength="300" required></textarea></label>
+                    <label>Tanggal dokumentasi<input name="documented_on" type="date" required></label>
+                    <label class="form-wide">File dokumentasi (maks. 10 file per unggahan)
+                        <input name="files" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,.docx,.xlsx,.pptx" multiple required>
+                    </label>
+                    <label class="form-wide">Keterangan (opsional, maks. 500 karakter)
+                        <textarea name="caption" rows="2" maxlength="500"></textarea>
+                    </label>
                     <label class="check-label"><input name="published" type="checkbox"> Publikasikan setelah diunggah</label>
                     <div class="form-actions form-wide">
-                        <button class="button button-primary" type="submit">Unggah foto</button>
+                        <button class="button button-primary" type="submit">Unggah dokumentasi</button>
                     </div>
                 </form>
+                <h3 class="gallery-admin-subheading">Folder dokumentasi per kegiatan</h3>
+                <div id="activityMediaFoldersList" class="record-list" aria-live="polite"></div>
+                <h3 class="gallery-admin-subheading">Galeri foto lama</h3>
                 <div id="galleryList" class="record-list gallery-records" aria-live="polite"></div>
             </section>
 
@@ -240,6 +278,10 @@
                             <option value="public">Public</option>
                             <option value="maintenance">Maintenance</option>
                         </select>
+                    </label>
+                    <label id="maintenanceNoteField" class="form-wide" for="maintenanceNote" hidden>
+                        Catatan maintenance untuk pengunjung (maks. 500 karakter)
+                        <textarea id="maintenanceNote" name="maintenance_note" rows="3" maxlength="500" placeholder="Contoh: Kami sedang memperbarui layanan. Silakan kembali pukul 15.00."></textarea>
                     </label>
                     <p id="siteModeDescription" class="form-wide" aria-live="polite"></p>
                     <div class="form-actions form-wide">

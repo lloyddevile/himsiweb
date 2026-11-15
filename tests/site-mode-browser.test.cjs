@@ -48,13 +48,14 @@ test("maintenance notice has readable contrast and no admin dashboard link", asy
 
     vm.runInNewContext(script, {
         document,
-        fetch: async () => ({ ok: true, json: async () => ({ mode: "maintenance" }) }),
+        fetch: async () => ({ ok: true, json: async () => ({ mode: "maintenance", maintenanceNote: "Pemeliharaan terjadwal hari ini." }) }),
         console: { error() {} },
     });
     await new Promise((resolve) => setImmediate(resolve));
 
     assert.equal(body.children.length, 1);
     assert.deepEqual(body.children[0].children.map((child) => child.tagName), ["P", "H1", "P"]);
+    assert.equal(body.children[0].children[2].textContent, "Pemeliharaan terjadwal hari ini.");
     assert.doesNotMatch(script, /\/page\/admin\.html|Masuk admin/);
 
     const css = styles[0].textContent;
@@ -68,4 +69,28 @@ test("maintenance notice has readable contrast and no admin dashboard link", asy
     for (const color of textColors) {
         assert.ok(contrastRatio(color, background) >= 4.5, `${color} should meet WCAG AA contrast`);
     }
+});
+
+test("maintenance notice uses a default message when no custom note is saved", async () => {
+    const script = fs.readFileSync(path.join(root, "js", "site-mode.js"), "utf8");
+    const body = createNode("body");
+    body.replaceChildren = function (...children) {
+        this.children = children;
+    };
+    const document = {
+        documentElement: { dataset: {} },
+        body,
+        head: { append() {} },
+        createElement: createNode,
+        addEventListener() {},
+    };
+
+    vm.runInNewContext(script, {
+        document,
+        fetch: async () => ({ ok: true, json: async () => ({ mode: "maintenance", maintenanceNote: "" }) }),
+        console: { error() {} },
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.equal(body.children[0].children[2].textContent, "Kami sedang melakukan pembaruan. Silakan kembali beberapa saat lagi.");
 });
