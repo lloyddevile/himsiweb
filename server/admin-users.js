@@ -1,22 +1,11 @@
 const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9._-]{1,30}[a-z0-9])$/;
 const LOGIN_EMAIL_DOMAIN = "admin.hmpssi.invalid";
-
-function respond(res, status, payload) {
-    res.setHeader("Cache-Control", "no-store");
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    return res.status(status).json(payload);
-}
-
-function getRequestBody(req) {
-    if (typeof req.body === "string") {
-        try {
-            return JSON.parse(req.body);
-        } catch {
-            return null;
-        }
-    }
-    return req.body;
-}
+const {
+    getRequestBody,
+    getSupabaseProjectUrl,
+    isSameOriginRequest,
+    respond,
+} = require("./http-utils");
 
 function isDuplicateUser(error) {
     return ["email_exists", "user_already_exists"].includes(error?.code);
@@ -24,15 +13,20 @@ function isDuplicateUser(error) {
 
 async function rollbackCreatedUser(projectUrl, serviceKey, userId) {
     try {
-        const response = await fetch(new URL(`/auth/v1/admin/users/${encodeURIComponent(userId)}`, projectUrl.origin), {
-            method: "DELETE",
-            headers: {
-                apikey: serviceKey,
-                Authorization: `Bearer ${serviceKey}`,
+        const response = await fetch(
+            new URL(`/auth/v1/admin/users/${encodeURIComponent(userId)}`, projectUrl.origin),
+            {
+                method: "DELETE",
+                headers: {
+                    apikey: serviceKey,
+                    Authorization: `Bearer ${serviceKey}`,
+                },
             },
-        });
+        );
         if (!response.ok) {
-            console.error("Supabase could not roll back an incomplete admin account.", { status: response.status });
+            console.error("Supabase could not roll back an incomplete admin account.", {
+                status: response.status,
+            });
         }
     } catch (error) {
         console.error("Supabase could not reach the admin account rollback endpoint.", error);
@@ -56,28 +50,25 @@ module.exports = async function handleAdminUsers(req, res) {
         return respond(res, 413, { error: "request_too_large" });
     }
 
-    const origin = req.headers.origin;
-    const host = req.headers.host;
-    if (!origin || !host) {
-        return respond(res, 403, { error: "forbidden" });
-    }
-    try {
-        if (new URL(origin).host !== host) {
-            return respond(res, 403, { error: "forbidden" });
-        }
-    } catch {
+    if (!isSameOriginRequest(req)) {
         return respond(res, 403, { error: "forbidden" });
     }
 
     const body = getRequestBody(req);
     const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : "";
     const password = typeof body?.password === "string" ? body.password : "";
-    if (!USERNAME_PATTERN.test(username) || username.includes("..") || password.length < 12 || password.length > 128) {
+    if (
+        !USERNAME_PATTERN.test(username) ||
+        username.includes("..") ||
+        password.length < 6 ||
+        password.length > 128
+    ) {
         return respond(res, 400, { error: "invalid_admin_details" });
     }
 
     const authorization = req.headers.authorization || "";
-    const tokenMatch = typeof authorization === "string" && authorization.match(/^Bearer ([^\s]+)$/i);
+    const tokenMatch =
+        typeof authorization === "string" && authorization.match(/^Bearer ([^\s]+)$/i);
     const supabaseUrl = process.env.SUPABASE_URL;
     const anonKey = process.env.SUPABASE_ANON_KEY;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -90,13 +81,8 @@ module.exports = async function handleAdminUsers(req, res) {
         return respond(res, 503, { error: "service_unavailable" });
     }
 
-    let projectUrl;
-    try {
-        projectUrl = new URL(supabaseUrl);
-        if (projectUrl.protocol !== "https:" && projectUrl.hostname !== "localhost" && projectUrl.hostname !== "127.0.0.1") {
-            throw new Error("Supabase URL must use HTTPS.");
-        }
-    } catch {
+    const projectUrl = getSupabaseProjectUrl(supabaseUrl);
+    if (!projectUrl) {
         console.error("Admin account API has an invalid Supabase URL.");
         return respond(res, 503, { error: "service_unavailable" });
     }
@@ -129,10 +115,12 @@ module.exports = async function handleAdminUsers(req, res) {
             cache: "no-store",
         });
         if (!adminResponse.ok) {
-            console.error("Supabase rejected the admin account authorization check.", { status: adminResponse.status });
+            console.error("Supabase rejected the admin account authorization check.", {
+                status: adminResponse.status,
+            });
             return respond(res, 502, { error: "authorization_check_failed" });
         }
-        if (await adminResponse.json() !== true) {
+        if ((await adminResponse.json()) !== true) {
             return respond(res, 403, { error: "forbidden" });
         }
 
@@ -155,7 +143,9 @@ module.exports = async function handleAdminUsers(req, res) {
             if (isDuplicateUser(createdUser)) {
                 return respond(res, 409, { error: "username_taken" });
             }
-            console.error("Supabase could not create an admin account.", { status: createResponse.status });
+            console.error("Supabase could not create an admin account.", {
+                status: createResponse.status,
+            });
             return respond(res, 502, { error: "admin_creation_failed" });
         }
 
@@ -183,7 +173,9 @@ module.exports = async function handleAdminUsers(req, res) {
             return respond(res, 502, { error: "admin_creation_failed" });
         }
         if (!grantResponse.ok) {
-            console.error("Supabase could not grant admin access to a newly created user.", { status: grantResponse.status });
+            console.error("Supabase could not grant admin access to a newly created user.", {
+                status: grantResponse.status,
+            });
             await rollbackCreatedUser(projectUrl, serviceKey, userId);
             return respond(res, 502, { error: "admin_creation_failed" });
         }

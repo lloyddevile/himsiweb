@@ -15,38 +15,52 @@ test("all admin data lists expose archive, restore, and permanent delete actions
         ["gallery_photos", "foto"],
         ["contact_messages", "pesan"],
     ]) {
-        assert.match(adminScript, new RegExp(`archiveRecord\\("${table}"`));
+        assert.match(adminScript, new RegExp(`archiveRecord\\s*\\(\\s*"${table}"`));
         if (table === "gallery_photos") {
             assert.match(adminScript, /deleteRecord\(\s*"gallery_photos"/);
         } else {
-            assert.match(adminScript, new RegExp(`deleteRecord\\("${table}"`));
+            assert.match(adminScript, new RegExp(`deleteRecord\\s*\\(\\s*"${table}"`));
         }
-        assert.match(adminScript, new RegExp(`createAction\\("Hapus ${actionLabel}`));
+        assert.match(adminScript, new RegExp(`createAction\\s*\\(\\s*"Hapus ${actionLabel}`));
     }
 
-    assert.match(adminScript, /async function deleteRecord\(table, id, label, storagePath = null, recordName = ""\)/);
+    assert.match(
+        adminScript,
+        /async function deleteRecord\(table, id, label, storagePath = null, recordName = ""\)/,
+    );
     assert.doesNotMatch(adminScript, /window\.confirm/);
     assert.match(adminScript, /\.delete\(\)\.eq\("id", id\)\.select\("id"\)\.single\(\)/);
     assert.match(adminScript, /dialog\.showModal\(\)/);
-    assert.match(adminHtml, /value="cancel"[^>]*>Batalkan<\/button>/);
-    assert.match(adminHtml, /value="confirm"[^>]*>Hapus permanen<\/button>/);
+    assert.match(adminHtml, /<button\b(?=[^>]*\bvalue="cancel")[^>]*>\s*Batalkan\s*<\/button>/);
+    assert.match(
+        adminHtml,
+        /<button\b(?=[^>]*\bvalue="confirm")[^>]*>\s*Hapus permanen\s*<\/button>/,
+    );
     assert.match(adminScript, /archiveRecord\("activity_media"/);
     assert.match(adminScript, /deleteRecord\(\s*"activity_media"/);
-    assert.match(adminScript, /createSignedUrls\(mediaItems\.map/);
+    assert.match(adminScript, /createSignedUrls\s*\(\s*mediaItems\.map/);
 });
 
 test("contact messages permit permanent deletion by admins only", () => {
     const migration = fs.readFileSync(
-        path.join(root, "supabase", "migrations", "20261114040000_admin_delete_contact_messages.sql"),
-        "utf8"
+        path.join(
+            root,
+            "supabase",
+            "migrations",
+            "20261114040000_admin_delete_contact_messages.sql",
+        ),
+        "utf8",
     );
 
     assert.match(migration, /grant delete on table public\.contact_messages to authenticated/i);
-    assert.match(migration, /for delete to authenticated\s+using \(public\.is_admin\(\)\)/i);
+    assert.match(migration, /for delete to authenticated\s+using \(public\.is_admin\s*\(\s*\)\)/i);
 });
 
 test("maintenance mode form supports a bounded public-facing maintenance note", () => {
-    assert.match(adminHtml, /id="maintenanceNote" name="maintenance_note" rows="3" maxlength="500"/);
+    assert.match(
+        adminHtml,
+        /<textarea\b(?=[^>]*\bid="maintenanceNote")(?=[^>]*\bname="maintenance_note")(?=[^>]*\brows="3")(?=[^>]*\bmaxlength="500")[^>]*>/,
+    );
     assert.match(adminScript, /\.select\("setting_value, maintenance_note"\)/);
     assert.match(adminScript, /maintenance_note: maintenanceNote/);
     assert.match(adminScript, /maintenanceNoteField\.hidden = mode !== "maintenance"/);

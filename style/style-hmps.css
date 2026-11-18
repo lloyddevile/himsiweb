@@ -14,9 +14,9 @@
     --border-strong: #cbd5e1;
     --success: #047857;
     --danger: #b91c1c;
-    --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
     --radius-sm: 6px;
     --radius-md: 8px;
     --radius-lg: 12px;
@@ -45,7 +45,12 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: var(--font-display);
     color: var(--ink);
     letter-spacing: -0.02em;
@@ -68,7 +73,9 @@ header {
     top: 0;
     z-index: 1000;
     border-bottom: 1px solid var(--border);
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
 }
 
 header.scrolled {
@@ -123,10 +130,22 @@ header.scrolled {
     font-weight: 500;
 }
 
-nav ul {
+#primaryNav {
     display: flex;
     list-style: none;
     gap: 1.6rem;
+}
+
+#primaryNav > li {
+    display: flex;
+    align-items: center;
+}
+
+#primaryNav > li > a,
+.nav-dropdown summary {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
 }
 
 nav a {
@@ -141,7 +160,7 @@ nav a {
 }
 
 nav a::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
@@ -159,6 +178,77 @@ nav a:hover::after {
     width: 100%;
 }
 
+.nav-dropdown {
+    position: relative;
+}
+
+.nav-dropdown summary {
+    color: var(--ink-body);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 600;
+    list-style: none;
+    padding: 0.4rem 0;
+    white-space: nowrap;
+}
+
+.nav-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.nav-dropdown summary:hover {
+    color: var(--primary);
+}
+
+.nav-dropdown summary::after {
+    content: "\f078";
+    display: inline-block;
+    font-family: "Font Awesome 6 Free";
+    font-size: 0.65rem;
+    font-weight: 900;
+    margin-left: 0.45rem;
+    transition: transform 0.2s ease;
+}
+
+.nav-dropdown[open] summary::after {
+    transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    display: none;
+    flex-direction: column;
+    gap: 0.25rem;
+    list-style: none;
+    min-width: 220px;
+    padding: 0.5rem;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+}
+
+.nav-dropdown[open] .nav-dropdown-menu {
+    display: flex;
+}
+
+.nav-dropdown-menu a {
+    display: block;
+    padding: 0.65rem 0.75rem;
+}
+
+.nav-dropdown-menu a::after {
+    display: none;
+}
+
+.nav-dropdown-menu a:hover {
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+}
+
 .mobile-menu {
     display: none;
     font-size: 1.35rem;
@@ -172,6 +262,7 @@ nav a:hover::after {
 
 button:focus-visible,
 a:focus-visible,
+summary:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
@@ -182,7 +273,9 @@ select:focus-visible {
 /* Hero Section */
 .hero {
     margin-top: 73px;
-    background: linear-gradient(110deg, rgba(12, 27, 51, 0.94) 0%, rgba(19, 41, 75, 0.86) 100%), url('/assets/event-placeholder.jpg');
+    background:
+        linear-gradient(110deg, rgba(12, 27, 51, 0.94) 0%, rgba(19, 41, 75, 0.86) 100%),
+        url("/assets/event-placeholder.jpg");
     background-size: cover;
     background-position: center;
     min-height: 520px;
@@ -250,7 +343,10 @@ select:focus-visible {
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 0.94rem;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
     border: 1px solid transparent;
     cursor: pointer;
 }
@@ -369,7 +465,9 @@ select:focus-visible {
     border-radius: var(--radius-md);
     background: var(--bg-page);
     border: 1px solid var(--border);
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .stat-card:hover {
@@ -526,7 +624,9 @@ select:focus-visible {
     border: 1px solid var(--border);
     overflow: hidden;
     box-shadow: var(--shadow-xs);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -659,6 +759,236 @@ select:focus-visible {
     margin: 0 auto;
 }
 
+.activity-registration-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 1rem;
+}
+
+.activity-registration-card {
+    min-width: 0;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-page);
+}
+
+.activity-registration-heading h4 {
+    margin: 0.2rem 0;
+    color: var(--ink);
+    font-size: 1.1rem;
+}
+
+.activity-registration-heading > p:not(.agenda-category) {
+    margin: 0.35rem 0 0;
+    color: var(--gray);
+    font-size: 0.9rem;
+}
+
+.registration-capacity {
+    color: var(--primary) !important;
+    font-weight: 600;
+}
+
+.registration-terms {
+    margin-top: 0.65rem;
+    color: var(--ink-body);
+}
+
+.registration-terms summary {
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.registration-terms p {
+    white-space: pre-line;
+}
+
+.activity-registration-form {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 1rem;
+}
+
+.registration-field {
+    display: grid;
+    gap: 0.3rem;
+    color: var(--ink-body);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.registration-field input {
+    width: 100%;
+    min-height: 42px;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    color: var(--ink);
+    font: inherit;
+}
+
+.registration-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    color: var(--gray);
+    font-size: 0.83rem;
+    line-height: 1.5;
+}
+
+.registration-consent input {
+    flex: 0 0 auto;
+    margin-top: 0.25rem;
+}
+
+.activity-registration-form .btn {
+    justify-self: start;
+}
+
+.activity-registration-form .form-status {
+    margin: 0;
+}
+
+.payment-qr-card {
+    display: grid;
+    justify-items: center;
+    gap: 0.65rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    text-align: center;
+}
+
+.payment-qr-card h4,
+.payment-qr-card p {
+    margin: 0;
+}
+
+.payment-qr-card h4 {
+    color: var(--primary-dark);
+    font-size: 1.05rem;
+}
+
+.payment-sandbox-note {
+    max-width: 46rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    color: var(--ink-body);
+}
+
+.payment-qr-amount {
+    color: var(--ink);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.payment-qr-image {
+    display: block;
+    width: min(100%, 280px);
+    aspect-ratio: 1;
+    object-fit: contain;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+}
+
+.registration-success-dialog {
+    width: min(92vw, 520px);
+    max-height: min(85vh, 720px);
+    margin: auto;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    color: var(--ink-body);
+    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24);
+}
+
+.registration-success-dialog::backdrop {
+    background: rgba(15, 23, 42, 0.62);
+    backdrop-filter: blur(2px);
+}
+
+.registration-success-content {
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1.25rem, 5vw, 2rem);
+}
+
+.registration-success-content h2 {
+    margin: 0;
+    color: var(--primary-dark);
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 5vw, 1.75rem);
+    line-height: 1.25;
+}
+
+.registration-success-label,
+.registration-success-message {
+    margin: 0;
+}
+
+.registration-success-label {
+    color: var(--success);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.registration-success-details {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-page);
+}
+
+.registration-success-detail {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.registration-success-detail dt {
+    color: var(--gray);
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.registration-success-detail dd {
+    margin: 0;
+    color: var(--ink);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.registration-success-content .btn {
+    justify-self: stretch;
+    text-align: center;
+}
+
+.registration-success-close {
+    background: var(--bg-subtle);
+    color: var(--primary-dark);
+    border-color: var(--border);
+}
+
+.registration-success-close:hover {
+    background: var(--border);
+}
+
 .agenda-item {
     display: flex;
     align-items: flex-start;
@@ -766,7 +1096,9 @@ select:focus-visible {
     border-radius: var(--radius-md);
     padding: 1.75rem 1.5rem;
     text-align: center;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
     height: 100%;
 }
 
@@ -823,7 +1155,9 @@ select:focus-visible {
     justify-content: center;
     color: var(--gray);
     text-decoration: none;
-    transition: border-color 0.2s ease, color 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        color 0.2s ease;
 }
 
 .social-link:hover {
@@ -861,7 +1195,10 @@ select:focus-visible {
     font-size: 0.88rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .filter-btn.active,
@@ -1126,7 +1463,9 @@ select:focus-visible {
     color: var(--ink);
     font-family: var(--font-body);
     font-size: 0.95rem;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .form-control:focus {
@@ -1197,7 +1536,7 @@ footer {
 }
 
 .footer-section h4::after {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     bottom: 0;
@@ -1369,13 +1708,14 @@ footer {
     }
 }
 
-@media (max-width: 768px) {
-    nav ul {
+@media (max-width: 920px) {
+    #primaryNav {
         position: fixed;
         top: 73px;
         left: -100%;
         width: 100%;
         height: calc(100vh - 73px);
+        height: calc(100dvh - 73px);
         background: var(--bg-surface);
         border-top: 1px solid var(--border);
         flex-direction: column;
@@ -1383,11 +1723,37 @@ footer {
         justify-content: flex-start;
         padding: 1.5rem 1.75rem;
         gap: 1.15rem;
+        overflow-y: auto;
         transition: left 0.3s ease;
     }
 
-    nav ul.active {
+    #primaryNav.active {
         left: 0;
+    }
+
+    .nav-dropdown {
+        width: 100%;
+    }
+
+    .nav-dropdown summary {
+        width: fit-content;
+    }
+
+    .nav-dropdown-menu {
+        background: transparent;
+        border: 0;
+        border-left: 2px solid var(--border-strong);
+        border-radius: 0;
+        box-shadow: none;
+        gap: 0.2rem;
+        margin: 0.35rem 0 0 0.2rem;
+        min-width: 0;
+        padding: 0.1rem 0 0.1rem 0.7rem;
+        position: static;
+    }
+
+    .nav-dropdown-menu a {
+        padding: 0.55rem 0;
     }
 
     .mobile-menu {
@@ -1397,7 +1763,9 @@ footer {
         width: 42px;
         height: 42px;
     }
+}
 
+@media (max-width: 768px) {
     .activities-grid,
     .team-grid {
         grid-template-columns: 1fr;

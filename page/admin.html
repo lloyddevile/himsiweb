@@ -1,307 +1,722 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="description" content="Dashboard pengelolaan konten HMPS Sistem Informasi.">
-    <title>Dashboard Admin - HMPS SI</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style/style-admin.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <header class="admin-header">
-        <a href="/page" class="admin-brand">
-            <img src="/hmpssi%20logo.png" alt="" width="42" height="42">
-            <span>Dashboard HMPS SI</span>
-        </a>
-        <a href="/page" class="back-to-site">Lihat website</a>
-    </header>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="description" content="Dashboard pengelolaan konten HMPS Sistem Informasi." />
+        <title>Dashboard Admin - HMPS SI</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/style/style-admin.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+    </head>
+    <body>
+        <header class="admin-header">
+            <a href="/page" class="admin-brand">
+                <img src="/hmpssi%20logo.png" alt="" width="42" height="42" />
+                <span>Dashboard HMPS SI</span>
+            </a>
+            <a href="/page" class="back-to-site">Lihat website</a>
+        </header>
 
-    <main class="admin-main">
-        <section id="loginPanel" class="auth-card" aria-labelledby="loginTitle">
-            <h1 id="loginTitle">Masuk Admin</h1>
-            <p>Masuk menggunakan username dan kata sandi admin. Admin utama yang sudah terdaftar juga dapat memakai emailnya.</p>
-            <form id="loginForm">
-                <label for="adminUsername">Username admin</label>
-                <input id="adminUsername" name="username" type="text" autocomplete="username" maxlength="254" required>
-                <label for="adminPassword">Kata sandi</label>
-                <input id="adminPassword" name="password" type="password" autocomplete="current-password" required>
-                <button class="button button-primary" type="submit">Masuk</button>
-            </form>
-            <p id="loginStatus" class="admin-status" role="status" aria-live="polite"></p>
-        </section>
-
-        <section id="dashboardPanel" class="dashboard" hidden aria-labelledby="dashboardTitle">
-            <div class="dashboard-heading">
-                <div>
-                    <p class="eyebrow">Pengelolaan konten</p>
-                    <h1 id="dashboardTitle">Dashboard</h1>
-                </div>
-                <button id="signOutButton" class="button button-secondary" type="button">Keluar</button>
-            </div>
-            <details class="password-settings">
-                <summary>Atur atau ganti kata sandi</summary>
-                <form id="passwordForm">
-                    <label for="newAdminPassword">Kata sandi baru (minimal 10 karakter)</label>
-                    <input id="newAdminPassword" name="password" type="password" minlength="10" autocomplete="new-password" required>
-                    <button class="button button-primary" type="submit">Simpan kata sandi</button>
+        <main class="admin-main">
+            <section id="loginPanel" class="auth-card" aria-labelledby="loginTitle">
+                <h1 id="loginTitle">Masuk Admin</h1>
+                <p>
+                    Masuk menggunakan username dan kata sandi admin. Admin utama yang sudah
+                    terdaftar juga dapat memakai emailnya.
+                </p>
+                <form id="loginForm">
+                    <label for="adminUsername">Username admin</label>
+                    <input
+                        id="adminUsername"
+                        name="username"
+                        type="text"
+                        autocomplete="username"
+                        maxlength="254"
+                        required
+                    />
+                    <label for="adminPassword">Kata sandi</label>
+                    <input
+                        id="adminPassword"
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        required
+                    />
+                    <button class="button button-primary" type="submit">Masuk</button>
                 </form>
-            </details>
-            <details id="adminAccountSettings" class="password-settings" hidden>
-                <summary>Buat akun admin</summary>
-                <p>Akun admin baru hanya dapat dibuat oleh admin utama yang diizinkan.</p>
-                <form id="adminAccountForm">
-                    <label for="newAdminUsername">Username (3–32 karakter: huruf, angka, titik, garis bawah, atau tanda hubung)</label>
-                    <input id="newAdminUsername" name="username" type="text" minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9]|[A-Za-z0-9]{3,32}" autocomplete="off" required>
-                    <label for="newAccountPassword">Kata sandi (minimal 12 karakter)</label>
-                    <input id="newAccountPassword" name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required>
-                    <button class="button button-primary" type="submit">Buat akun</button>
-                </form>
-            </details>
+                <p id="loginStatus" class="admin-status" role="status" aria-live="polite"></p>
+            </section>
 
-            <p id="dashboardStatus" class="admin-status" role="status" aria-live="polite"></p>
-
-            <dialog id="deleteConfirmDialog" class="delete-confirm-dialog" aria-labelledby="deleteConfirmTitle" aria-describedby="deleteConfirmName deleteConfirmMessage deleteConfirmWarning">
-                <div class="delete-confirm-content">
-                    <div class="delete-confirm-heading">
-                        <span class="delete-confirm-icon" aria-hidden="true">!</span>
-                        <div>
-                            <p class="eyebrow">Konfirmasi penghapusan</p>
-                            <h2 id="deleteConfirmTitle">Hapus data secara permanen?</h2>
-                        </div>
+            <section id="dashboardPanel" class="dashboard" hidden aria-labelledby="dashboardTitle">
+                <div class="dashboard-heading">
+                    <div>
+                        <p class="eyebrow">Pengelolaan konten</p>
+                        <h1 id="dashboardTitle">Dashboard</h1>
                     </div>
-                    <p id="deleteConfirmName" class="delete-confirm-name"></p>
-                    <p id="deleteConfirmMessage" class="delete-confirm-message"></p>
-                    <div id="deleteConfirmWarning" class="delete-confirm-warning" role="note"></div>
-                    <form method="dialog" class="delete-confirm-actions">
-                        <button class="button button-secondary" type="submit" value="cancel" autofocus>Batalkan</button>
-                        <button class="button button-danger" type="submit" value="confirm">Hapus permanen</button>
+                    <button id="signOutButton" class="button button-secondary" type="button">
+                        Keluar
+                    </button>
+                </div>
+                <details class="password-settings">
+                    <summary>Atur atau ganti kata sandi</summary>
+                    <form id="passwordForm">
+                        <label for="newAdminPassword">Kata sandi baru (6-128 karakter)</label>
+                        <input
+                            id="newAdminPassword"
+                            name="password"
+                            type="password"
+                            minlength="6"
+                            maxlength="128"
+                            autocomplete="new-password"
+                            required
+                        />
+                        <button class="button button-primary" type="submit">
+                            Simpan kata sandi
+                        </button>
                     </form>
-                </div>
-            </dialog>
+                </details>
+                <details id="adminAccountSettings" class="password-settings" hidden>
+                    <summary>Buat akun admin</summary>
+                    <p>Akun admin baru hanya dapat dibuat oleh admin utama yang diizinkan.</p>
+                    <form id="adminAccountForm">
+                        <label for="newAdminUsername"
+                            >Username (3–32 karakter: huruf, angka, titik, garis bawah, atau tanda
+                            hubung)</label
+                        >
+                        <input
+                            id="newAdminUsername"
+                            name="username"
+                            type="text"
+                            minlength="3"
+                            maxlength="32"
+                            pattern="[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9]|[A-Za-z0-9]{3,32}"
+                            autocomplete="off"
+                            required
+                        />
+                        <label for="newAccountPassword">Kata sandi (minimal 6 karakter)</label>
+                        <input
+                            id="newAccountPassword"
+                            name="password"
+                            type="password"
+                            minlength="6"
+                            maxlength="128"
+                            autocomplete="new-password"
+                            required
+                        />
+                        <button class="button button-primary" type="submit">Buat akun</button>
+                    </form>
+                </details>
 
-            <nav class="dashboard-tabs" aria-label="Bagian dashboard">
-                <button type="button" class="tab-button active" data-tab="members">Anggota</button>
-                <button type="button" class="tab-button" data-tab="programs">Program kerja</button>
-                <button type="button" class="tab-button" data-tab="activities">Kegiatan</button>
-                <button type="button" class="tab-button" data-tab="gallery">Galeri</button>
-                <button type="button" class="tab-button" data-tab="messages">Pesan masuk</button>
-                <button type="button" class="tab-button" data-tab="site-mode">Mode website</button>
-                <button type="button" class="tab-button" data-tab="audit-log">Log aktivitas</button>
-            </nav>
+                <p id="dashboardStatus" class="admin-status" role="status" aria-live="polite"></p>
 
-            <section class="dashboard-panel" data-panel="members">
-                <div class="panel-heading">
-                    <h2>Anggota & kepengurusan</h2>
-                    <p>Kelola nama, jabatan, divisi, foto, dan status publikasi.</p>
-                </div>
-                <form id="memberForm" class="editor-form">
-                    <input type="hidden" name="id">
-                    <input type="hidden" name="photo_path">
-                    <label>Nama<input name="name" maxlength="120" required></label>
-                    <label for="memberPosition">Jabatan
-                        <select id="memberPosition" name="position" required>
-                            <option value="">Pilih jabatan</option>
-                            <option value="Ketua Umum">Ketua Umum</option>
-                            <option value="Sekretaris Umum">Sekretaris Umum</option>
-                            <option value="Bendahara Umum">Bendahara Umum</option>
-                            <option value="Kepala Divisi">Kepala Divisi (Kadiv)</option>
-                            <option value="Kepala Program Studi">Kepala Program Studi</option>
-                            <option value="Sekretaris Program Studi">Sekretaris Program Studi</option>
-                            <option value="Anggota Divisi">Anggota Divisi</option>
-                        </select>
-                    </label>
-                    <input id="memberDivision" type="hidden" name="division">
-                    <label id="memberDivisionField" for="memberDivisionSelect">Divisi
-                        <select id="memberDivisionSelect" required>
-                            <option value="">Pilih divisi</option>
-                            <option value="Internal">Internal</option>
-                            <option value="Eksternal">Eksternal</option>
-                            <option value="Kesekretariatan">Kesekretariatan</option>
-                            <option value="Pemberdayaan Perempuan">Pemberdayaan Perempuan</option>
-                            <option value="Medinfo (Media dan Informasi)">Medinfo (Media dan Informasi)</option>
-                        </select>
-                    </label>
-                    <label>Periode<input name="period" maxlength="40"></label>
-                    <label class="form-wide">Tugas / keterangan<textarea name="duties" rows="3" maxlength="2000"></textarea></label>
-                    <label>Urutan<input name="sort_order" type="number" value="0" min="0" max="9999"></label>
-                    <label>Foto (JPEG, PNG, atau WebP; sumber maks. 50 MB, hasil maks. 10 MB)<input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label>
-                    <div class="photo-tools form-wide">
-                        <div class="photo-preview">
-                            <img id="memberPhotoPreview" alt="Pratinjau foto anggota" hidden>
-                            <span id="memberPhotoEmpty">Belum ada foto baru dipilih.</span>
+                <dialog
+                    id="deleteConfirmDialog"
+                    class="delete-confirm-dialog"
+                    aria-labelledby="deleteConfirmTitle"
+                    aria-describedby="deleteConfirmName deleteConfirmMessage deleteConfirmWarning"
+                >
+                    <div class="delete-confirm-content">
+                        <div class="delete-confirm-heading">
+                            <span class="delete-confirm-icon" aria-hidden="true">!</span>
+                            <div>
+                                <p class="eyebrow">Konfirmasi penghapusan</p>
+                                <h2 id="deleteConfirmTitle">Hapus data secara permanen?</h2>
+                            </div>
                         </div>
-                        <div class="photo-editor-actions">
-                            <button id="editMemberPhotoButton" class="button button-secondary" type="button" disabled>Edit, crop, dan resize foto</button>
-                            <p>Pilih foto lalu edit area crop dan ukuran hasil sebelum menyimpan.</p>
-                        </div>
-                    </div>
-                    <label class="check-label"><input name="is_featured" type="checkbox"> Tampilkan di beranda (pimpinan prodi dan pengurus inti)</label>
-                    <label class="check-label"><input name="published" type="checkbox"> Publikasikan</label>
-                    <div class="form-actions form-wide">
-                        <button class="button button-primary" type="submit">Simpan anggota</button>
-                        <button class="button button-secondary" type="reset">Kosongkan</button>
-                    </div>
-                </form>
-                <dialog id="memberPhotoEditor" class="photo-editor-dialog" aria-labelledby="photoEditorTitle">
-                    <div class="photo-editor-heading">
-                        <div>
-                            <h2 id="photoEditorTitle">Edit foto anggota</h2>
-                            <p>Pilih area crop, geser foto untuk mengatur posisinya, dan scroll foto untuk zoom.</p>
-                        </div>
-                        <button id="closePhotoEditorButton" class="button button-secondary" type="button">Tutup</button>
-                    </div>
-                    <div class="photo-editor-modes" role="group" aria-label="Mode editor foto">
-                        <button id="selectPhotoCropMode" class="button button-primary" type="button" aria-pressed="true">Pilih area crop</button>
-                        <button id="movePhotoMode" class="button button-secondary" type="button" aria-pressed="false">Geser foto</button>
-                    </div>
-                    <div class="photo-canvas-wrap">
-                        <canvas id="photoEditorCanvas" aria-label="Pilih area crop dengan menyeret pada foto"></canvas>
-                    </div>
-                    <div class="photo-editor-controls">
-                        <label class="photo-zoom-control">Zoom
-                            <span>
-                                <input id="photoZoom" type="range" min="1" max="3" step="0.1" value="1">
-                                <output id="photoZoomValue" for="photoZoom">1.0x</output>
-                            </span>
-                        </label>
-                        <label>Lebar hasil (px)<input id="photoOutputWidth" type="number" min="1" max="4096" step="1"></label>
-                        <label>Tinggi hasil (px)<input id="photoOutputHeight" type="number" min="1" max="4096" step="1"></label>
-                        <label class="check-label"><input id="photoKeepAspect" type="checkbox" checked> Pertahankan rasio aspek</label>
-                        <button id="resetPhotoCropButton" class="button button-secondary" type="button">Reset crop dan zoom</button>
-                    </div>
-                    <p id="photoEditorStatus" class="admin-status" role="status" aria-live="polite"></p>
-                    <div class="form-actions">
-                        <button id="applyPhotoEditButton" class="button button-primary" type="button">Gunakan foto ini</button>
+                        <p id="deleteConfirmName" class="delete-confirm-name"></p>
+                        <p id="deleteConfirmMessage" class="delete-confirm-message"></p>
+                        <div
+                            id="deleteConfirmWarning"
+                            class="delete-confirm-warning"
+                            role="note"
+                        ></div>
+                        <form method="dialog" class="delete-confirm-actions">
+                            <button
+                                class="button button-secondary"
+                                type="submit"
+                                value="cancel"
+                                autofocus
+                            >
+                                Batalkan
+                            </button>
+                            <button class="button button-danger" type="submit" value="confirm">
+                                Hapus permanen
+                            </button>
+                        </form>
                     </div>
                 </dialog>
-                <div id="membersList" class="record-list" aria-live="polite"></div>
-            </section>
 
-            <section class="dashboard-panel" data-panel="programs" hidden>
-                <div class="panel-heading">
-                    <h2>Program kerja</h2>
-                    <p>Buat, perbarui, publikasikan, atau arsipkan program.</p>
-                </div>
-                <form id="programForm" class="editor-form">
-                    <input type="hidden" name="id">
-                    <label>Nama program<input name="title" maxlength="160" required></label>
-                    <label>Periode<input name="period" maxlength="40"></label>
-                    <label class="form-wide">Deskripsi<textarea name="description" rows="4" maxlength="3000"></textarea></label>
-                    <label>Urutan<input name="sort_order" type="number" value="0" min="0" max="9999"></label>
-                    <label class="check-label"><input name="published" type="checkbox"> Publikasikan</label>
-                    <div class="form-actions form-wide">
-                        <button class="button button-primary" type="submit">Simpan program</button>
-                        <button class="button button-secondary" type="reset">Kosongkan</button>
+                <nav class="dashboard-tabs" aria-label="Bagian dashboard">
+                    <button type="button" class="tab-button active" data-tab="members">
+                        Anggota
+                    </button>
+                    <button type="button" class="tab-button" data-tab="programs">
+                        Program kerja
+                    </button>
+                    <button type="button" class="tab-button" data-tab="activities">Kegiatan</button>
+                    <button type="button" class="tab-button" data-tab="gallery">Galeri</button>
+                    <button type="button" class="tab-button" data-tab="messages">
+                        Pesan masuk
+                    </button>
+                    <button type="button" class="tab-button" data-tab="site-mode">
+                        Mode website
+                    </button>
+                    <button type="button" class="tab-button" data-tab="audit-log">
+                        Log aktivitas
+                    </button>
+                </nav>
+
+                <section class="dashboard-panel" data-panel="members">
+                    <div class="panel-heading">
+                        <h2>Anggota & kepengurusan</h2>
+                        <p>Kelola nama, jabatan, divisi, foto, dan status publikasi.</p>
                     </div>
-                </form>
-                <div id="programsList" class="record-list" aria-live="polite"></div>
-            </section>
+                    <form id="memberForm" class="editor-form">
+                        <input type="hidden" name="id" />
+                        <input type="hidden" name="photo_path" />
+                        <label>Nama<input name="name" maxlength="120" required /></label>
+                        <label for="memberPosition"
+                            >Jabatan
+                            <select id="memberPosition" name="position" required>
+                                <option value="">Pilih jabatan</option>
+                                <option value="Ketua Umum">Ketua Umum</option>
+                                <option value="Sekretaris Umum">Sekretaris Umum</option>
+                                <option value="Bendahara Umum">Bendahara Umum</option>
+                                <option value="Kepala Divisi">Kepala Divisi (Kadiv)</option>
+                                <option value="Kepala Program Studi">Kepala Program Studi</option>
+                                <option value="Sekretaris Program Studi">
+                                    Sekretaris Program Studi
+                                </option>
+                                <option value="Anggota Divisi">Anggota Divisi</option>
+                            </select>
+                        </label>
+                        <input id="memberDivision" type="hidden" name="division" />
+                        <label id="memberDivisionField" for="memberDivisionSelect"
+                            >Divisi
+                            <select id="memberDivisionSelect" required>
+                                <option value="">Pilih divisi</option>
+                                <option value="Internal">Internal</option>
+                                <option value="Eksternal">Eksternal</option>
+                                <option value="Kesekretariatan">Kesekretariatan</option>
+                                <option value="Pemberdayaan Perempuan">
+                                    Pemberdayaan Perempuan
+                                </option>
+                                <option value="Medinfo (Media dan Informasi)">
+                                    Medinfo (Media dan Informasi)
+                                </option>
+                            </select>
+                        </label>
+                        <label>Periode<input name="period" maxlength="40" /></label>
+                        <label class="form-wide"
+                            >Tugas / keterangan<textarea
+                                name="duties"
+                                rows="3"
+                                maxlength="2000"
+                            ></textarea>
+                        </label>
+                        <label
+                            >Urutan<input
+                                name="sort_order"
+                                type="number"
+                                value="0"
+                                min="0"
+                                max="9999"
+                        /></label>
+                        <label
+                            >Foto (JPEG, PNG, atau WebP; sumber maks. 50 MB, hasil maks. 10
+                            MB)<input
+                                name="photo"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                        /></label>
+                        <div class="photo-tools form-wide">
+                            <div class="photo-preview">
+                                <img id="memberPhotoPreview" alt="Pratinjau foto anggota" hidden />
+                                <span id="memberPhotoEmpty">Belum ada foto baru dipilih.</span>
+                            </div>
+                            <div class="photo-editor-actions">
+                                <button
+                                    id="editMemberPhotoButton"
+                                    class="button button-secondary"
+                                    type="button"
+                                    disabled
+                                >
+                                    Edit, crop, dan resize foto
+                                </button>
+                                <p>
+                                    Pilih foto lalu edit area crop dan ukuran hasil sebelum
+                                    menyimpan.
+                                </p>
+                            </div>
+                        </div>
+                        <label class="check-label"
+                            ><input name="is_featured" type="checkbox" /> Tampilkan di beranda
+                            (pimpinan prodi dan pengurus inti)</label
+                        >
+                        <label class="check-label"
+                            ><input name="published" type="checkbox" /> Publikasikan</label
+                        >
+                        <div class="form-actions form-wide">
+                            <button class="button button-primary" type="submit">
+                                Simpan anggota
+                            </button>
+                            <button class="button button-secondary" type="reset">Kosongkan</button>
+                        </div>
+                    </form>
+                    <dialog
+                        id="memberPhotoEditor"
+                        class="photo-editor-dialog"
+                        aria-labelledby="photoEditorTitle"
+                    >
+                        <div class="photo-editor-heading">
+                            <div>
+                                <h2 id="photoEditorTitle">Edit foto anggota</h2>
+                                <p>
+                                    Pilih area crop, geser foto untuk mengatur posisinya, dan scroll
+                                    foto untuk zoom.
+                                </p>
+                            </div>
+                            <button
+                                id="closePhotoEditorButton"
+                                class="button button-secondary"
+                                type="button"
+                            >
+                                Tutup
+                            </button>
+                        </div>
+                        <div class="photo-editor-modes" role="group" aria-label="Mode editor foto">
+                            <button
+                                id="selectPhotoCropMode"
+                                class="button button-primary"
+                                type="button"
+                                aria-pressed="true"
+                            >
+                                Pilih area crop
+                            </button>
+                            <button
+                                id="movePhotoMode"
+                                class="button button-secondary"
+                                type="button"
+                                aria-pressed="false"
+                            >
+                                Geser foto
+                            </button>
+                        </div>
+                        <div class="photo-canvas-wrap">
+                            <canvas
+                                id="photoEditorCanvas"
+                                aria-label="Pilih area crop dengan menyeret pada foto"
+                            ></canvas>
+                        </div>
+                        <div class="photo-editor-controls">
+                            <label class="photo-zoom-control"
+                                >Zoom
+                                <span>
+                                    <input
+                                        id="photoZoom"
+                                        type="range"
+                                        min="1"
+                                        max="3"
+                                        step="0.1"
+                                        value="1"
+                                    />
+                                    <output id="photoZoomValue" for="photoZoom">1.0x</output>
+                                </span>
+                            </label>
+                            <label
+                                >Lebar hasil (px)<input
+                                    id="photoOutputWidth"
+                                    type="number"
+                                    min="1"
+                                    max="4096"
+                                    step="1"
+                            /></label>
+                            <label
+                                >Tinggi hasil (px)<input
+                                    id="photoOutputHeight"
+                                    type="number"
+                                    min="1"
+                                    max="4096"
+                                    step="1"
+                            /></label>
+                            <label class="check-label"
+                                ><input id="photoKeepAspect" type="checkbox" checked /> Pertahankan
+                                rasio aspek</label
+                            >
+                            <button
+                                id="resetPhotoCropButton"
+                                class="button button-secondary"
+                                type="button"
+                            >
+                                Reset crop dan zoom
+                            </button>
+                        </div>
+                        <p
+                            id="photoEditorStatus"
+                            class="admin-status"
+                            role="status"
+                            aria-live="polite"
+                        ></p>
+                        <div class="form-actions">
+                            <button
+                                id="applyPhotoEditButton"
+                                class="button button-primary"
+                                type="button"
+                            >
+                                Gunakan foto ini
+                            </button>
+                        </div>
+                    </dialog>
+                    <div id="membersList" class="record-list" aria-live="polite"></div>
+                </section>
 
-            <section class="dashboard-panel" data-panel="activities" hidden>
-                <div class="panel-heading">
-                    <h2>Kegiatan</h2>
-                    <p>Kelola informasi kegiatan. Foto dikelola terpisah pada bagian Galeri.</p>
-                </div>
-                <form id="activityForm" class="editor-form">
-                    <input type="hidden" name="id">
-                    <label>Nama kegiatan<input name="title" maxlength="160" required></label>
-                    <label>Kategori
-                        <select name="category" required>
-                            <option value="Seminar">Seminar</option>
-                            <option value="Workshop">Workshop</option>
-                            <option value="Kompetisi">Kompetisi</option>
-                            <option value="Sosial">Sosial</option>
-                            <option value="Lainnya">Lainnya</option>
-                        </select>
-                    </label>
-                    <label>Tanggal<input name="event_date" type="date"></label>
-                    <label>Urutan<input name="sort_order" type="number" value="0" min="0" max="9999"></label>
-                    <label class="form-wide">Deskripsi<textarea name="description" rows="4" maxlength="3000"></textarea></label>
-                    <label class="check-label"><input name="published" type="checkbox"> Publikasikan</label>
-                    <div class="form-actions form-wide">
-                        <button class="button button-primary" type="submit">Simpan kegiatan</button>
-                        <button class="button button-secondary" type="reset">Kosongkan</button>
+                <section class="dashboard-panel" data-panel="programs" hidden>
+                    <div class="panel-heading">
+                        <h2>Program kerja</h2>
+                        <p>Buat, perbarui, publikasikan, atau arsipkan program.</p>
                     </div>
-                </form>
-                <div id="activitiesList" class="record-list" aria-live="polite"></div>
-            </section>
+                    <form id="programForm" class="editor-form">
+                        <input type="hidden" name="id" />
+                        <label>Nama program<input name="title" maxlength="160" required /></label>
+                        <label>Periode<input name="period" maxlength="40" /></label>
+                        <label class="form-wide"
+                            >Deskripsi<textarea
+                                name="description"
+                                rows="4"
+                                maxlength="3000"
+                            ></textarea>
+                        </label>
+                        <label
+                            >Urutan<input
+                                name="sort_order"
+                                type="number"
+                                value="0"
+                                min="0"
+                                max="9999"
+                        /></label>
+                        <label class="check-label"
+                            ><input name="published" type="checkbox" /> Publikasikan</label
+                        >
+                        <div class="form-actions form-wide">
+                            <button class="button button-primary" type="submit">
+                                Simpan program
+                            </button>
+                            <button class="button button-secondary" type="reset">Kosongkan</button>
+                        </div>
+                    </form>
+                    <div id="programsList" class="record-list" aria-live="polite"></div>
+                </section>
 
-            <section class="dashboard-panel" data-panel="gallery" hidden>
-                <div class="panel-heading">
-                    <h2>Album dan dokumentasi kegiatan</h2>
-                    <p>Dokumentasi tersimpan dalam folder per kegiatan dan tanggal. Format gambar, PDF, video, serta dokumen Office; maksimal 10 MB per file.</p>
-                </div>
-                <form id="activityMediaForm" class="editor-form">
-                    <label>Kegiatan
-                        <select name="activity_id" required>
-                        </select>
-                    </label>
-                    <label>Tanggal dokumentasi<input name="documented_on" type="date" required></label>
-                    <label class="form-wide">File dokumentasi (maks. 10 file per unggahan)
-                        <input name="files" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,.docx,.xlsx,.pptx" multiple required>
-                    </label>
-                    <label class="form-wide">Keterangan (opsional, maks. 500 karakter)
-                        <textarea name="caption" rows="2" maxlength="500"></textarea>
-                    </label>
-                    <label class="check-label"><input name="published" type="checkbox"> Publikasikan setelah diunggah</label>
-                    <div class="form-actions form-wide">
-                        <button class="button button-primary" type="submit">Unggah dokumentasi</button>
+                <section class="dashboard-panel" data-panel="activities" hidden>
+                    <div class="panel-heading">
+                        <h2>Kegiatan</h2>
+                        <p>
+                            Kelola informasi kegiatan dan foto banner. Foto dokumentasi tetap
+                            dikelola pada bagian Galeri.
+                        </p>
                     </div>
-                </form>
-                <h3 class="gallery-admin-subheading">Folder dokumentasi per kegiatan</h3>
-                <div id="activityMediaFoldersList" class="record-list" aria-live="polite"></div>
-                <h3 class="gallery-admin-subheading">Galeri foto lama</h3>
-                <div id="galleryList" class="record-list gallery-records" aria-live="polite"></div>
-            </section>
+                    <section
+                        id="paymentGatewaySettings"
+                        class="payment-gateway-settings"
+                        hidden
+                        aria-labelledby="paymentGatewayTitle"
+                    >
+                        <h3 id="paymentGatewayTitle">Konfigurasi pembayaran</h3>
+                        <p>
+                            Gunakan Sandbox untuk pengujian terkontrol: pengunjung tidak dapat
+                            membayar melalui provider, tidak ada QR sungguhan, dan admin dapat
+                            menandai transaksi tes sebagai sukses. Perubahan mode hanya berlaku
+                            untuk transaksi baru. API key live tetap disimpan di Environment Variables Vercel dan tidak ditampilkan di dashboard.
+                        </p>
+                        <form id="paymentGatewaySettingsForm" class="editor-form">
+                            <label
+                                >Mode pembayaran
+                                <select name="mode" required>
+                                    <option value="live">Live — QRIS Zapay</option>
+                                    <option value="sandbox">Sandbox — simulasi lokal</option>
+                                </select>
+                            </label>
+                            <div class="form-actions form-wide">
+                                <button class="button button-primary" type="submit">
+                                    Simpan konfigurasi pembayaran
+                                </button>
+                            </div>
+                        </form>
+                        <p
+                            id="paymentGatewayStatus"
+                            class="admin-status"
+                            role="status"
+                            aria-live="polite"
+                        ></p>
+                    </section>
+                    <form id="activityForm" class="editor-form">
+                        <input type="hidden" name="id" />
+                        <input type="hidden" name="cover_path" />
+                        <label>Nama kegiatan<input name="title" maxlength="160" required /></label>
+                        <label
+                            >Kategori
+                            <select name="category" required>
+                                <option value="Seminar">Seminar</option>
+                                <option value="Workshop">Workshop</option>
+                                <option value="Kompetisi">Kompetisi</option>
+                                <option value="Sosial">Sosial</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </label>
+                        <label>Tanggal<input name="event_date" type="date" /></label>
+                        <label
+                            >Urutan<input
+                                name="sort_order"
+                                type="number"
+                                value="0"
+                                min="0"
+                                max="9999"
+                        /></label>
+                        <label class="form-wide"
+                            >Deskripsi<textarea
+                                name="description"
+                                rows="4"
+                                maxlength="3000"
+                            ></textarea>
+                        </label>
+                        <label class="form-wide"
+                            >Foto banner kegiatan (JPEG, PNG, atau WebP; maks. 10 MB)
+                            <input
+                                name="cover"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                            />
+                        </label>
+                        <p class="form-hint form-wide">
+                            Jika tidak memilih foto baru, banner yang sudah ada tetap digunakan.
+                        </p>
+                        <fieldset
+                            class="activity-registration-settings form-wide"
+                            id="activityRegistrationSettings"
+                            hidden
+                        >
+                            <legend>Pendaftaran online</legend>
+                            <label class="check-label">
+                                <input name="registration_enabled" type="checkbox" />
+                                Buka pendaftaran untuk kegiatan ini
+                            </label>
+                            <label
+                                >Kuota peserta (opsional)
+                                <input
+                                    name="registration_capacity"
+                                    type="number"
+                                    min="1"
+                                    max="100000"
+                                    placeholder="Kosongkan untuk tanpa batas"
+                                />
+                            </label>
+                            <label class="form-wide"
+                                >Syarat dan ketentuan<textarea
+                                    name="registration_terms"
+                                    rows="4"
+                                    maxlength="5000"
+                                    placeholder="Tuliskan syarat yang perlu diketahui dan disetujui peserta."
+                                ></textarea>
+                            </label>
+                            <label class="check-label">
+                                <input name="registration_is_free" type="checkbox" checked />
+                                Pendaftaran gratis
+                            </label>
+                            <div
+                                id="activityRegistrationPaidFields"
+                                class="form-wide activity-registration-paid-fields"
+                                hidden
+                            >
+                                <label
+                                    >Biaya pendaftaran (Rp1.000–Rp10.000.000)
+                                    <input
+                                        name="registration_fee"
+                                        type="number"
+                                        min="1000"
+                                        max="10000000"
+                                        step="1"
+                                        placeholder="Contoh: 25000"
+                                    />
+                                </label>
+                                <label
+                                    >Batas pembayaran untuk semua peserta
+                                    <input
+                                        name="registration_payment_deadline"
+                                        type="datetime-local"
+                                    />
+                                </label>
+                                <label class="form-wide"
+                                    >Link grup peserta (diberikan setelah pembayaran sukses)
+                                    <input
+                                        name="registration_whatsapp_group_link"
+                                        type="url"
+                                        placeholder="Link undangan WhatsApp, Telegram, atau Discord"
+                                        maxlength="200"
+                                    />
+                                </label>
+                                <p class="form-hint form-wide">
+                                    Bisa menggunakan link undangan WhatsApp, Telegram, atau Discord.
+                                </p>
+                            </div>
+                            <p class="form-hint form-wide">
+                                Form peserta berisi nama, jurusan/prodi, semester, dan nomor
+                                WhatsApp aktif (+62). Pembayaran berbayar diproses melalui QRIS
+                                Zapay.
+                            </p>
+                            <p class="form-hint form-wide">
+                                Pendaftaran hanya tampil jika kegiatan dipublikasikan, tanggal belum
+                                lewat, dan opsi ini diaktifkan.
+                            </p>
+                        </fieldset>
+                        <label class="check-label"
+                            ><input name="published" type="checkbox" /> Publikasikan</label
+                        >
+                        <div class="form-actions form-wide">
+                            <button class="button button-primary" type="submit">
+                                Simpan kegiatan
+                            </button>
+                            <button class="button button-secondary" type="reset">Kosongkan</button>
+                        </div>
+                    </form>
+                    <p
+                        id="activityRegistrationStatus"
+                        class="admin-status"
+                        role="status"
+                        aria-live="polite"
+                    ></p>
+                    <div id="activitiesList" class="record-list" aria-live="polite"></div>
+                    <h3 class="gallery-admin-subheading">Daftar pendaftar</h3>
+                    <div
+                        id="activityRegistrationsList"
+                        class="record-list"
+                        aria-live="polite"
+                    ></div>
+                </section>
 
-            <section class="dashboard-panel" data-panel="messages" hidden>
-                <div class="panel-heading">
-                    <h2>Pesan masuk</h2>
-                    <p>Pesan dari formulir kontak hanya dapat dilihat admin.</p>
-                </div>
-                <div id="messagesList" class="record-list" aria-live="polite"></div>
-            </section>
-
-            <section class="dashboard-panel" data-panel="site-mode" hidden>
-                <div class="panel-heading">
-                    <h2>Mode website</h2>
-                    <p>Atur apakah halaman publik dapat dilihat pengunjung. Dashboard admin tetap dapat diakses.</p>
-                </div>
-                <form id="siteModeForm" class="editor-form">
-                    <label for="siteMode">Pilih mode
-                        <select id="siteMode" name="setting_value" required>
-                            <option value="public">Public</option>
-                            <option value="maintenance">Maintenance</option>
-                        </select>
-                    </label>
-                    <label id="maintenanceNoteField" class="form-wide" for="maintenanceNote" hidden>
-                        Catatan maintenance untuk pengunjung (maks. 500 karakter)
-                        <textarea id="maintenanceNote" name="maintenance_note" rows="3" maxlength="500" placeholder="Contoh: Kami sedang memperbarui layanan. Silakan kembali pukul 15.00."></textarea>
-                    </label>
-                    <p id="siteModeDescription" class="form-wide" aria-live="polite"></p>
-                    <div class="form-actions form-wide">
-                        <button class="button button-primary" type="submit">Simpan mode website</button>
+                <section class="dashboard-panel" data-panel="gallery" hidden>
+                    <div class="panel-heading">
+                        <h2>Album dan dokumentasi kegiatan</h2>
+                        <p>
+                            Dokumentasi tersimpan dalam folder per kegiatan dan tanggal. Format
+                            gambar, PDF, video, serta dokumen Office; maksimal 10 MB per file.
+                        </p>
                     </div>
-                </form>
-            </section>
+                    <form id="activityMediaForm" class="editor-form">
+                        <label
+                            >Kegiatan
+                            <select name="activity_id" required></select>
+                        </label>
+                        <label
+                            >Tanggal dokumentasi<input name="documented_on" type="date" required
+                        /></label>
+                        <label class="form-wide"
+                            >File dokumentasi (maks. 10 file per unggahan)
+                            <input
+                                name="files"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,.docx,.xlsx,.pptx"
+                                multiple
+                                required
+                            />
+                        </label>
+                        <label class="form-wide"
+                            >Keterangan (opsional, maks. 500 karakter)
+                            <textarea name="caption" rows="2" maxlength="500"></textarea>
+                        </label>
+                        <label class="check-label"
+                            ><input name="published" type="checkbox" /> Publikasikan setelah
+                            diunggah</label
+                        >
+                        <div class="form-actions form-wide">
+                            <button class="button button-primary" type="submit">
+                                Unggah dokumentasi
+                            </button>
+                        </div>
+                    </form>
+                    <h3 class="gallery-admin-subheading">Folder dokumentasi per kegiatan</h3>
+                    <div id="activityMediaFoldersList" class="record-list" aria-live="polite"></div>
+                    <h3 class="gallery-admin-subheading">Galeri foto lama</h3>
+                    <div
+                        id="galleryList"
+                        class="record-list gallery-records"
+                        aria-live="polite"
+                    ></div>
+                </section>
 
-            <section class="dashboard-panel" data-panel="audit-log" hidden>
-                <div class="panel-heading">
-                    <h2>Log aktivitas admin</h2>
-                    <p>Menampilkan hingga 100 perubahan terbaru pada konten, pesan, dan mode website.</p>
-                </div>
-                <div id="auditLogList" class="record-list" aria-live="polite"></div>
-            </section>
-        </section>
-    </main>
+                <section class="dashboard-panel" data-panel="messages" hidden>
+                    <div class="panel-heading">
+                        <h2>Pesan masuk</h2>
+                        <p>Pesan dari formulir kontak hanya dapat dilihat admin.</p>
+                    </div>
+                    <div id="messagesList" class="record-list" aria-live="polite"></div>
+                </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
-    <script src="/js/supabase-client.js"></script>
-    <script src="/js/admin.js"></script>
-</body>
+                <section class="dashboard-panel" data-panel="site-mode" hidden>
+                    <div class="panel-heading">
+                        <h2>Mode website</h2>
+                        <p>
+                            Atur apakah halaman publik dapat dilihat pengunjung. Dashboard admin
+                            tetap dapat diakses.
+                        </p>
+                    </div>
+                    <form id="siteModeForm" class="editor-form">
+                        <label for="siteMode"
+                            >Pilih mode
+                            <select id="siteMode" name="setting_value" required>
+                                <option value="public">Public</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
+                        </label>
+                        <label
+                            id="maintenanceNoteField"
+                            class="form-wide"
+                            for="maintenanceNote"
+                            hidden
+                        >
+                            Catatan maintenance untuk pengunjung (maks. 500 karakter)
+                            <textarea
+                                id="maintenanceNote"
+                                name="maintenance_note"
+                                rows="3"
+                                maxlength="500"
+                                placeholder="Contoh: Kami sedang memperbarui layanan. Silakan kembali pukul 15.00."
+                            ></textarea>
+                        </label>
+                        <p id="siteModeDescription" class="form-wide" aria-live="polite"></p>
+                        <div class="form-actions form-wide">
+                            <button class="button button-primary" type="submit">
+                                Simpan mode website
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="dashboard-panel" data-panel="audit-log" hidden>
+                    <div class="panel-heading">
+                        <h2>Log aktivitas admin</h2>
+                        <p>
+                            Menampilkan hingga 100 perubahan terbaru pada konten, pesan, dan mode
+                            website.
+                        </p>
+                    </div>
+                    <div id="auditLogList" class="record-list" aria-live="polite"></div>
+                </section>
+            </section>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
+        <script src="/js/supabase-client.js"></script>
+        <script src="/js/activity-registration-utils.js"></script>
+        <script src="/js/admin.js"></script>
+    </body>
 </html>

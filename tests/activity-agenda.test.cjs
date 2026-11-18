@@ -25,7 +25,7 @@ test("upcoming agenda excludes past and undated activities and sorts the nearest
 
     assert.deepEqual(
         Array.from(getUpcomingActivities(activities, "2026-11-15"), (activity) => activity.title),
-        ["Also Soon", "Soon", "Later"]
+        ["Also Soon", "Soon", "Later"],
     );
     assert.equal(getUpcomingActivities(activities, "2026-11-15", 2).length, 2);
 });
@@ -41,7 +41,7 @@ test("published activity media is grouped into folders by activity", () => {
     assert.deepEqual(Array.from(groups.keys()), ["event-a", "event-b"]);
     assert.deepEqual(
         Array.from(groups.get("event-a"), (media) => media.file_name),
-        ["poster.pdf", "photo.webp"]
+        ["poster.pdf", "photo.webp"],
     );
 });
 
@@ -50,13 +50,13 @@ test("activity media is stored in activity/date folders and supports selected fi
     const activityMediaPath = extractFunction(adminScript, "activityMediaPath");
     const migration = fs.readFileSync(
         path.join(root, "supabase", "migrations", "20261115010000_activity_media.sql"),
-        "utf8"
+        "utf8",
     );
     const dashboard = fs.readFileSync(path.join(root, "page", "admin.html"), "utf8");
 
     assert.equal(
         activityMediaPath("event-id", "2026-11-20", "file-id", "pdf"),
-        "activities/event-id/2026-11-20/file-id.pdf"
+        "activities/event-id/2026-11-20/file-id.pdf",
     );
     for (const contentType of [
         "image/jpeg",
@@ -70,6 +70,9 @@ test("activity media is stored in activity/date folders and supports selected fi
         assert.ok(migration.includes(contentType), `${contentType} should be allowed in Storage`);
     }
     assert.match(dashboard, /name="documented_on" type="date"/);
-    assert.match(dashboard, /name="files" type="file"[^>]*multiple required/);
+    assert.match(
+        dashboard,
+        /<input\b(?=[^>]*\bname="files")(?=[^>]*\btype="file")(?=[^>]*\bmultiple)(?=[^>]*\brequired)[^>]*>/,
+    );
     assert.match(adminScript, /MAX_ACTIVITY_MEDIA_SIZE = 10 \* 1024 \* 1024/);
 });

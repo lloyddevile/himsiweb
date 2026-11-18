@@ -1,8 +1,4 @@
-function respond(res, status, payload) {
-    res.setHeader("Cache-Control", "no-store");
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    return res.status(status).json(payload);
-}
+const { getSupabaseProjectUrl, respond } = require("./http-utils");
 
 module.exports = async function handleSiteMode(req, res) {
     if (req.method !== "GET") {
@@ -16,13 +12,8 @@ module.exports = async function handleSiteMode(req, res) {
         return respond(res, 503, { error: "service_unavailable" });
     }
 
-    let projectUrl;
-    try {
-        projectUrl = new URL(supabaseUrl);
-        if (projectUrl.protocol !== "https:" && projectUrl.hostname !== "localhost" && projectUrl.hostname !== "127.0.0.1") {
-            throw new Error("Supabase URL must use HTTPS.");
-        }
-    } catch {
+    const projectUrl = getSupabaseProjectUrl(supabaseUrl);
+    if (!projectUrl) {
         console.error("Site mode API has an invalid Supabase URL.");
         return respond(res, 503, { error: "service_unavailable" });
     }
@@ -52,9 +43,10 @@ module.exports = async function handleSiteMode(req, res) {
             return respond(res, 502, { error: "site_mode_unavailable" });
         }
 
-        const maintenanceNote = typeof settings.maintenance_note === "string"
-            ? settings.maintenance_note.slice(0, 500)
-            : "";
+        const maintenanceNote =
+            typeof settings.maintenance_note === "string"
+                ? settings.maintenance_note.slice(0, 500)
+                : "";
         return respond(res, 200, { mode, maintenanceNote });
     } catch (error) {
         console.error("Site mode API could not reach Supabase.", error);

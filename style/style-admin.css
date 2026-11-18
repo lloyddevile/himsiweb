@@ -13,9 +13,9 @@
     --admin-surface: #ffffff;
     --admin-background: #f7f8fa;
     --admin-danger: #b91c1c;
-    --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 * {
@@ -32,7 +32,9 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     font-family: var(--font-display);
     color: var(--admin-text);
     letter-spacing: -0.02em;
@@ -475,7 +477,10 @@ select:focus-visible {
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .tab-button.active {
@@ -515,6 +520,77 @@ select:focus-visible {
     grid-column: 1 / -1;
 }
 
+.payment-gateway-settings {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    background: var(--admin-background);
+}
+
+.payment-gateway-settings h3,
+.payment-gateway-settings p {
+    margin: 0;
+}
+
+.payment-gateway-settings h3 {
+    font-size: 1rem;
+}
+
+.payment-gateway-settings > p {
+    color: var(--admin-muted);
+    font-size: 0.88rem;
+}
+
+.payment-gateway-settings .editor-form {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.activity-registration-settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    align-items: end;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+}
+
+.activity-registration-settings legend {
+    padding: 0 0.4rem;
+    font-family: var(--font-display);
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--admin-primary-dark);
+}
+
+.activity-registration-settings .check-label {
+    min-height: 42px;
+}
+
+.activity-registration-paid-fields {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 0.85rem;
+}
+
+.activity-registration-paid-fields[hidden] {
+    display: none;
+}
+
+.activity-registration-settings .form-hint {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--admin-muted);
+    font-size: 0.86rem;
+}
+
 .check-label {
     display: inline-flex;
     align-items: center;
@@ -542,7 +618,9 @@ select:focus-visible {
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .button-primary {
@@ -642,6 +720,24 @@ select:focus-visible {
     color: var(--admin-text);
     font-family: var(--font-display);
     font-size: 1rem;
+}
+
+.activity-registration-admin-group {
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    background: var(--admin-surface);
+}
+
+.activity-registration-admin-group > summary {
+    color: var(--admin-primary-dark);
+    font-family: var(--font-display);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.activity-registration-admin-group > .record-list {
+    margin-top: 0.85rem;
 }
 
 .activity-media-folder {

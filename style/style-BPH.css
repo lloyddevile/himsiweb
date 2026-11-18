@@ -12,9 +12,9 @@
     --gray: #64748b;
     --border: #e2e8f0;
     --border-strong: #cbd5e1;
-    --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
     --radius-sm: 6px;
     --radius-md: 8px;
     --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -35,7 +35,10 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
     font-family: var(--font-display);
     color: var(--ink);
     letter-spacing: -0.02em;

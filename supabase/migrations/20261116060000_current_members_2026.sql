@@ -1,0 +1,26 @@
+insert into public.members
+    (name, position, division, period, sort_order, published)
+values
+    ('Muhammad Aljir Romdhan', 'Koordinator (Kadiv)', 'Internal', '2026', 100, true),
+    ('Leny Febriani', 'Anggota Divisi', 'Internal', '2026', 101, true),
+    ('Mustamiudin Sani', 'Anggota Divisi', 'Internal', '2026', 102, true),
+    ('Hamdan Rozikin', 'Anggota Divisi', 'Internal', '2026', 103, true),
+    ('Heri Irwandi', 'Anggota Divisi', 'Internal', '2026', 104, true),
+    ('Lina Rachmawati', 'Anggota Divisi', 'Internal', '2026', 105, true),
+    ('Nursyafi''i Mansyur', 'Koordinator (Kadiv)', 'Eksternal', '2026', 106, true),
+    ('Zulkifli Rahman Ihsani', 'Anggota Divisi', 'Eksternal', '2026', 107, true),
+    ('Abdul Aziz', 'Anggota Divisi', 'Eksternal', '2026', 108, true),
+    ('Mujib Sailin', 'Anggota Divisi', 'Eksternal', '2026', 109, true),
+    ('Muhammad Azhari', 'Koordinator (Kadiv)', 'Kesekretariatan', '2026', 110, true),
+    ('Zepa Putri Awali Patoni', 'Anggota Divisi', 'Kesekretariatan', '2026', 111, true),
+    ('Abdusyahid', 'Anggota Divisi', 'Kesekretariatan', '2026', 112, true),
+    ('Laela Ulpa Sari', 'Anggota Divisi', 'Kesekretariatan', '2026', 113, true),
+    ('Gusman Andrean', 'Anggota Divisi', 'Kesekretariatan', '2026', 114, true),
+    ('Sani Rahmatullah', 'Koordinator', 'Medinfo (Media dan Informasi)', '2026', 115, true),
+    ('Muhammad Fadilatul Mu''arraf', 'Anggota Divisi', 'Medinfo (Media dan Informasi)', '2026', 116, true),
+    ('Dianita Cahyani', 'Anggota Divisi', 'Medinfo (Media dan Informasi)', '2026', 117, true),
+    ('Rohmatuzziadah', 'Anggota Divisi', 'Medinfo (Media dan Informasi)', '2026', 118, true),
+    ('Muhammad Sofiyan Sauri', 'Anggota Divisi', 'Medinfo (Media dan Informasi)', '2026', 119, true),
+    ('Anita', 'Anggota Divisi', 'Medinfo (Media dan Informasi)', '2026', 120, true),
+    ('Syifaussaadah', 'Koordinator', 'Pemberdayaan Perempuan', '2026', 121, true),
+    ('Bq. Novia Aulia', 'Anggota Divisi', 'Pemberdayaan Perempuan', '2026', 122, true);

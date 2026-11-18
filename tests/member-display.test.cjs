@@ -8,7 +8,9 @@ const root = path.join(__dirname, "..");
 const publicScript = fs.readFileSync(path.join(root, "js", "all-komponen.js"), "utf8");
 
 test("homepage shows featured program leadership above executive roles", () => {
-    const functionSource = publicScript.match(/function getHomepageLeaders\(members\) \{[\s\S]*?\n\}/);
+    const functionSource = publicScript.match(
+        /function getHomepageLeaders\(members\) \{[\s\S]*?\n\}/,
+    );
     assert.ok(functionSource, "homepage leadership filter should exist");
     const getHomepageLeaders = vm.runInNewContext(`(${functionSource[0]})`);
     const members = [
@@ -30,11 +32,11 @@ test("homepage shows featured program leadership above executive roles", () => {
             "Ketua Umum",
             "Sekretaris Umum",
             "Bendahara UMUM",
-        ]
+        ],
     );
     assert.match(
         fs.readFileSync(path.join(root, "page", "beranda.html"), "utf8"),
-        /Kepala Program Studi,\s*Sekretaris Program Studi/
+        /Kepala Program Studi,\s*Sekretaris Program Studi/,
     );
     assert.match(publicScript, /renderDirectory\(directory, members, client\)/);
 });
@@ -45,4 +47,19 @@ test("member directory displays Pengurus Inti before Program Studi and Pengurus 
     assert.match(publicScript, /title: "Pengurus Harian"/);
     assert.match(publicScript, /getDirectorySections\(members\)/);
     assert.match(publicScript, /node\("h3", "", division\.division\)/);
+});
+
+test("members without uploaded photos receive a personalized SVG avatar", () => {
+    const functionSource = publicScript.match(/function memberAvatarSvg\(name\) \{[\s\S]*?\n\}/);
+    assert.ok(functionSource, "member SVG avatar generator should exist");
+    const memberAvatarSvg = vm.runInNewContext(
+        `(${functionSource[0].replace(/^function memberAvatarSvg/, "function")})`,
+    );
+
+    const avatar = memberAvatarSvg("Nursyafi'i Mansyur");
+    assert.match(avatar, /^data:image\/svg\+xml;charset=UTF-8,/);
+    const svg = decodeURIComponent(avatar.split(",")[1]);
+    assert.match(svg, /<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    assert.match(svg, />NM<\/text>/);
+    assert.match(publicScript, /memberAvatarSvg\(member\.name\)/);
 });

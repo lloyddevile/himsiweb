@@ -59,15 +59,19 @@
         const heading = document.createElement("h1");
         heading.textContent = "Website sedang dalam pemeliharaan";
         const message = document.createElement("p");
-        message.textContent = result.maintenanceNote.trim()
-            || "Kami sedang melakukan pembaruan. Silakan kembali beberapa saat lagi.";
+        message.textContent =
+            result.maintenanceNote.trim() ||
+            "Kami sedang melakukan pembaruan. Silakan kembali beberapa saat lagi.";
         notice.append(eyebrow, heading, message);
         document.body.replaceChildren(notice);
     }
 
     applySiteMode()
         .catch((error) => {
-            console.error("Mode situs tidak dapat diperiksa; halaman publik tetap ditampilkan.", error);
+            console.error(
+                "Mode situs tidak dapat diperiksa; halaman publik tetap ditampilkan.",
+                error,
+            );
         })
         .finally(() => {
             delete root.dataset.siteModeLoading;

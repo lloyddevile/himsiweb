@@ -73,17 +73,25 @@ test("contact endpoint rejects invalid input before calling Supabase", async () 
 
 test("contact endpoint rejects missing origin and cross-origin requests", async () => {
     const missingOrigin = makeResponse();
-    await contactHandler(contactRequest({ headers: { "content-type": "application/json", host: "hmpssi.vercel.app" } }), missingOrigin);
+    await contactHandler(
+        contactRequest({
+            headers: { "content-type": "application/json", host: "hmpssi.vercel.app" },
+        }),
+        missingOrigin,
+    );
     assert.equal(missingOrigin.statusCode, 403);
 
     const crossOrigin = makeResponse();
-    await contactHandler(contactRequest({
-        headers: {
-            "content-type": "application/json",
-            host: "hmpssi.vercel.app",
-            origin: "https://attacker.example",
-        },
-    }), crossOrigin);
+    await contactHandler(
+        contactRequest({
+            headers: {
+                "content-type": "application/json",
+                host: "hmpssi.vercel.app",
+                origin: "https://attacker.example",
+            },
+        }),
+        crossOrigin,
+    );
     assert.equal(crossOrigin.statusCode, 403);
 });
 
@@ -101,7 +109,10 @@ test("contact endpoint stores validated data through the server-only RPC", async
 
     assert.equal(response.statusCode, 201);
     assert.equal(response.body.ok, true);
-    assert.equal(requestOptions.url, "https://project.supabase.co/rest/v1/rpc/submit_contact_message");
+    assert.equal(
+        requestOptions.url,
+        "https://project.supabase.co/rest/v1/rpc/submit_contact_message",
+    );
     assert.equal(requestOptions.options.headers.apikey, "server-secret");
     const payload = JSON.parse(requestOptions.options.body);
     assert.equal(payload.p_name, "Dewi");
@@ -112,10 +123,14 @@ test("contact endpoint stores validated data through the server-only RPC", async
 test("contact endpoint reports database rate limiting", async () => {
     process.env.SUPABASE_URL = "https://project.supabase.co";
     process.env.SUPABASE_SERVICE_ROLE_KEY = "server-secret";
-    global.fetch = async () => new Response(JSON.stringify({
-        code: "P0001",
-        message: "rate limit exceeded",
-    }), { status: 400 });
+    global.fetch = async () =>
+        new Response(
+            JSON.stringify({
+                code: "P0001",
+                message: "rate limit exceeded",
+            }),
+            { status: 400 },
+        );
     const response = makeResponse();
 
     await contactHandler(contactRequest(), response);

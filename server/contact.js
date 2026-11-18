@@ -1,24 +1,12 @@
 const crypto = require("node:crypto");
+const {
+    getRequestBody,
+    getSupabaseProjectUrl,
+    isSameOriginRequest,
+    respond,
+} = require("./http-utils");
 
 const MAX_BODY_BYTES = 8192;
-
-function respond(res, status, payload) {
-    res.setHeader("Cache-Control", "no-store");
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    return res.status(status).json(payload);
-}
-
-function getRequestBody(req) {
-    if (typeof req.body === "string") {
-        try {
-            return JSON.parse(req.body);
-        } catch {
-            return null;
-        }
-    }
-
-    return req.body;
-}
 
 function validateContact(body) {
     if (!body || typeof body !== "object" || Array.isArray(body) || body.consent !== true) {
@@ -63,19 +51,8 @@ module.exports = async function handleContact(req, res) {
         return respond(res, 413, { error: "request_too_large" });
     }
 
-    const origin = req.headers.origin;
-    const host = req.headers.host;
-    if (!origin || !host) {
+    if (!isSameOriginRequest(req)) {
         return respond(res, 403, { error: "origin_not_allowed" });
-    }
-    if (origin && host) {
-        try {
-            if (new URL(origin).host !== host) {
-                return respond(res, 403, { error: "origin_not_allowed" });
-            }
-        } catch {
-            return respond(res, 403, { error: "origin_not_allowed" });
-        }
     }
 
     const contact = validateContact(getRequestBody(req));
@@ -90,21 +67,17 @@ module.exports = async function handleContact(req, res) {
         return respond(res, 503, { error: "service_unavailable" });
     }
 
-    let projectUrl;
-    try {
-        projectUrl = new URL(supabaseUrl);
-        if (projectUrl.protocol !== "https:" && projectUrl.hostname !== "localhost" && projectUrl.hostname !== "127.0.0.1") {
-            throw new Error("Supabase URL must use HTTPS.");
-        }
-    } catch {
+    const projectUrl = getSupabaseProjectUrl(supabaseUrl);
+    if (!projectUrl) {
         console.error("Contact API has an invalid Supabase URL.");
         return respond(res, 503, { error: "service_unavailable" });
     }
 
     const forwardedFor = req.headers["x-forwarded-for"];
-    const requesterAddress = typeof forwardedFor === "string"
-        ? forwardedFor.split(",")[0].trim()
-        : req.socket?.remoteAddress || "unknown";
+    const requesterAddress =
+        typeof forwardedFor === "string"
+            ? forwardedFor.split(",")[0].trim()
+            : req.socket?.remoteAddress || "unknown";
     const requesterHash = crypto
         .createHmac("sha256", serviceKey)
         .update(requesterAddress)

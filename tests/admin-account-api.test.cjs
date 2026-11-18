@@ -13,7 +13,9 @@ const environmentKeys = [
     "SUPABASE_SERVICE_ROLE_KEY",
     "ADMIN_ACCOUNT_CREATOR_EMAIL",
 ];
-const originalEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]));
+const originalEnvironment = Object.fromEntries(
+    environmentKeys.map((key) => [key, process.env[key]]),
+);
 
 afterEach(() => {
     global.fetch = originalFetch;
@@ -56,7 +58,7 @@ function accountRequest(overrides = {}) {
             origin: "https://hmpssi.vercel.app",
             authorization: "Bearer owner-token",
         },
-        body: { username: "Editor.Admin", password: "a-secure-password-123" },
+        body: { username: "Editor.Admin", password: "abc123" },
         ...overrides,
     };
 }
@@ -73,10 +75,68 @@ test("admin dashboard offers username-password creation only to the designated o
     const adminScript = fs.readFileSync(path.join(root, "js", "admin.js"), "utf8");
 
     assert.match(adminHtml, /id="newAdminUsername"[^>]*name="username"/);
-    assert.match(adminHtml, /id="newAccountPassword"[^>]*name="password"[^>]*minlength="12"/);
+    assert.match(adminHtml, /id="newAccountPassword"[^>]*name="password"[^>]*minlength="6"/);
     assert.match(adminScript, /const ADMIN_ACCOUNT_CREATOR_EMAIL = "muhammadfatiha83@gmail\.com"/);
     assert.match(adminScript, /fetch\("\/api\/admin-users"/);
     assert.match(adminScript, /Authorization: `Bearer \$\{accessToken\}`/);
+});
+
+test("admin password changes and new accounts both accept 6 to 128 characters", () => {
+    const adminHtml = fs.readFileSync(path.join(root, "page", "admin.html"), "utf8");
+    const adminScript = fs.readFileSync(path.join(root, "js", "admin.js"), "utf8");
+    const passwordForm = adminHtml.match(/<form id="passwordForm">([\s\S]*?)<\/form>/);
+    const passwordHandlerStart = adminScript.indexOf(
+        'document.getElementById("passwordForm").addEventListener',
+    );
+    const passwordHandlerEnd = adminScript.indexOf(
+        "connectAdminAccountForm();",
+        passwordHandlerStart,
+    );
+
+    assert.ok(passwordForm, "password change form should exist");
+    assert.match(
+        passwordForm[1],
+        /<input\b(?=[^>]*\bid="newAdminPassword")(?=[^>]*\bminlength="6")(?=[^>]*\bmaxlength="128")[^>]*>/,
+    );
+    assert.ok(passwordHandlerStart >= 0 && passwordHandlerEnd > passwordHandlerStart);
+    assert.match(
+        adminScript.slice(passwordHandlerStart, passwordHandlerEnd),
+        /password\.length < 6 \|\| password\.length > 128/,
+    );
+    assert.match(
+        adminHtml,
+        /<input\b(?=[^>]*\bid="newAccountPassword")(?=[^>]*\bminlength="6")[^>]*>/,
+    );
+    const accountHandlerStart = adminScript.indexOf("function connectAdminAccountForm()");
+    const accountHandlerEnd = adminScript.indexOf(
+        "function connectDashboard()",
+        accountHandlerStart,
+    );
+    assert.ok(accountHandlerStart >= 0 && accountHandlerEnd > accountHandlerStart);
+    assert.match(
+        adminScript.slice(accountHandlerStart, accountHandlerEnd),
+        /password\.length < 6 \|\| password\.length > 128/,
+    );
+});
+
+test("admin account endpoint rejects passwords shorter than 6 characters", async () => {
+    let fetchCalled = false;
+    global.fetch = async () => {
+        fetchCalled = true;
+        throw new Error("Supabase must not be called for an invalid password");
+    };
+    const response = makeResponse();
+
+    await adminUsersHandler(
+        accountRequest({
+            body: { username: "Editor.Admin", password: "abc12" },
+        }),
+        response,
+    );
+
+    assert.equal(response.statusCode, 400);
+    assert.deepEqual(response.body, { error: "invalid_admin_details" });
+    assert.equal(fetchCalled, false);
 });
 
 test("admin account endpoint rejects cross-origin requests", async () => {
@@ -87,9 +147,12 @@ test("admin account endpoint rejects cross-origin requests", async () => {
     };
     const response = makeResponse();
 
-    await adminUsersHandler(accountRequest({
-        headers: { ...accountRequest().headers, origin: "https://attacker.example" },
-    }), response);
+    await adminUsersHandler(
+        accountRequest({
+            headers: { ...accountRequest().headers, origin: "https://attacker.example" },
+        }),
+        response,
+    );
 
     assert.equal(response.statusCode, 403);
     assert.equal(fetchCalled, false);
@@ -101,7 +164,10 @@ test("only the configured admin can create username-password admin accounts", as
     global.fetch = async (url, options) => {
         calls.push({ url: url.toString(), options });
         if (url.toString() === "https://project.supabase.co/auth/v1/user") {
-            return new Response(JSON.stringify({ id: "owner-id", email: "muhammadfatiha83@gmail.com" }), { status: 200 });
+            return new Response(
+                JSON.stringify({ id: "owner-id", email: "muhammadfatiha83@gmail.com" }),
+                { status: 200 },
+            );
         }
         if (url.toString() === "https://project.supabase.co/rest/v1/rpc/is_admin") {
             return new Response("true", { status: 200 });
@@ -124,7 +190,7 @@ test("only the configured admin can create username-password admin accounts", as
     assert.equal(createCall.options.headers.Authorization, "Bearer server-secret");
     assert.deepEqual(JSON.parse(createCall.options.body), {
         email: "editor.admin@admin.hmpssi.invalid",
-        password: "a-secure-password-123",
+        password: "abc123",
         email_confirm: true,
         user_metadata: { username: "editor.admin" },
     });
@@ -134,10 +200,14 @@ test("only the configured admin can create username-password admin accounts", as
 
 test("admin account endpoint refuses users outside the configured owner email", async () => {
     configureEnvironment();
-    global.fetch = async () => new Response(JSON.stringify({
-        id: "other-id",
-        email: "another-admin@example.org",
-    }), { status: 200 });
+    global.fetch = async () =>
+        new Response(
+            JSON.stringify({
+                id: "other-id",
+                email: "another-admin@example.org",
+            }),
+            { status: 200 },
+        );
     const response = makeResponse();
 
     await adminUsersHandler(accountRequest(), response);
@@ -150,7 +220,10 @@ test("admin account endpoint requires the owner account to have admin access", a
     configureEnvironment();
     global.fetch = async (url) => {
         if (url.toString() === "https://project.supabase.co/auth/v1/user") {
-            return new Response(JSON.stringify({ id: "owner-id", email: "muhammadfatiha83@gmail.com" }), { status: 200 });
+            return new Response(
+                JSON.stringify({ id: "owner-id", email: "muhammadfatiha83@gmail.com" }),
+                { status: 200 },
+            );
         }
         return new Response("false", { status: 200 });
     };
@@ -166,7 +239,10 @@ test("admin account endpoint reports an already-used username", async () => {
     configureEnvironment();
     global.fetch = async (url) => {
         if (url.toString() === "https://project.supabase.co/auth/v1/user") {
-            return new Response(JSON.stringify({ id: "owner-id", email: "muhammadfatiha83@gmail.com" }), { status: 200 });
+            return new Response(
+                JSON.stringify({ id: "owner-id", email: "muhammadfatiha83@gmail.com" }),
+                { status: 200 },
+            );
         }
         if (url.toString() === "https://project.supabase.co/rest/v1/rpc/is_admin") {
             return new Response("true", { status: 200 });
@@ -188,7 +264,10 @@ test("admin account endpoint rolls back Auth user creation if admin access canno
     global.fetch = async (url, options) => {
         calls.push({ url: url.toString(), options });
         if (url.toString() === "https://project.supabase.co/auth/v1/user") {
-            return new Response(JSON.stringify({ id: "owner-id", email: "muhammadfatiha83@gmail.com" }), { status: 200 });
+            return new Response(
+                JSON.stringify({ id: "owner-id", email: "muhammadfatiha83@gmail.com" }),
+                { status: 200 },
+            );
         }
         if (url.toString() === "https://project.supabase.co/rest/v1/rpc/is_admin") {
             return new Response("true", { status: 200 });
@@ -209,5 +288,8 @@ test("admin account endpoint rolls back Auth user creation if admin access canno
     await adminUsersHandler(accountRequest(), response);
 
     assert.equal(response.statusCode, 502);
-    assert.equal(calls.some((call) => call.options.method === "DELETE"), true);
+    assert.equal(
+        calls.some((call) => call.options.method === "DELETE"),
+        true,
+    );
 });

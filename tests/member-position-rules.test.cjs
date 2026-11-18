@@ -9,11 +9,11 @@ const adminScript = fs.readFileSync(path.join(root, "js", "admin.js"), "utf8");
 const adminHtml = fs.readFileSync(path.join(root, "page", "admin.html"), "utf8");
 const migration = fs.readFileSync(
     path.join(root, "supabase", "migrations", "20261115020000_member_position_rules.sql"),
-    "utf8"
+    "utf8",
 );
 const organizationMigration = fs.readFileSync(
     path.join(root, "supabase", "migrations", "20261115030000_member_organization_groups.sql"),
-    "utf8"
+    "utf8",
 );
 
 function extractDeclaration(source, pattern, label) {
@@ -26,19 +26,21 @@ function loadPositionConflictHelper() {
     const positions = extractDeclaration(
         adminScript,
         /const UNIQUE_MEMBER_POSITIONS = new Set\(\[[\s\S]*?\n\]\);/,
-        "unique position list"
+        "unique position list",
     );
     const normalize = extractDeclaration(
         adminScript,
         /function normalizeMemberValue\(value\) \{[\s\S]*?\n\}/,
-        "member value normalizer"
+        "member value normalizer",
     );
     const conflict = extractDeclaration(
         adminScript,
         /function getMemberPositionConflict\(members, candidate, editingId = null\) \{[\s\S]*?\n\}/,
-        "member position validation"
+        "member position validation",
     );
-    return vm.runInNewContext(`(() => { ${positions}; ${normalize}; ${conflict}; return getMemberPositionConflict; })()`);
+    return vm.runInNewContext(
+        `(() => { ${positions}; ${normalize}; ${conflict}; return getMemberPositionConflict; })()`,
+    );
 }
 
 test("the member form offers the requested job and division dropdowns", () => {
@@ -74,31 +76,33 @@ test("single-seat leadership roles reject duplicates but allow editing the same 
 
     assert.match(getConflict(existing, candidate), /Ketua Umum hanya boleh dimiliki satu anggota/);
     assert.equal(getConflict(existing, candidate, "leader-1"), null);
-    assert.equal(
-        getConflict([{ ...existing[0], archived_at: "2026-01-01" }], candidate),
-        null
-    );
+    assert.equal(getConflict([{ ...existing[0], archived_at: "2026-01-01" }], candidate), null);
 });
 
 test("each division can have one head while ordinary division members can be multiple", () => {
     const getConflict = loadPositionConflictHelper();
-    const existing = [{
-        id: "head-1",
-        position: "Kepala Divisi Konten & Informasi",
-        division: "Medinfo (Media dan Informasi)",
-    }];
+    const existing = [
+        {
+            id: "head-1",
+            position: "Kepala Divisi Konten & Informasi",
+            division: "Medinfo (Media dan Informasi)",
+        },
+    ];
 
     assert.match(
-        getConflict(existing, { position: "Kepala Divisi", division: "Medinfo (Media dan Informasi)" }),
-        /sudah memiliki Kepala Divisi/
+        getConflict(existing, {
+            position: "Kepala Divisi",
+            division: "Medinfo (Media dan Informasi)",
+        }),
+        /sudah memiliki Kepala Divisi/,
     );
+    assert.equal(getConflict(existing, { position: "Kepala Divisi", division: "Internal" }), null);
     assert.equal(
-        getConflict(existing, { position: "Kepala Divisi", division: "Internal" }),
-        null
-    );
-    assert.equal(
-        getConflict(existing, { position: "Anggota Divisi", division: "Medinfo (Media dan Informasi)" }),
-        null
+        getConflict(existing, {
+            position: "Anggota Divisi",
+            division: "Medinfo (Media dan Informasi)",
+        }),
+        null,
     );
 });
 
@@ -110,13 +114,15 @@ test("database migration enforces unique leadership and one division head per di
 });
 
 test("core leadership is assigned to Pengurus Inti and harian members remain grouped under Pengurus Harian", () => {
-    const directoryFunction = adminScript.match(/function syncMemberDivisionField\(\) \{[\s\S]*?\n\}/);
+    const directoryFunction = adminScript.match(
+        /function syncMemberDivisionField\(\) \{[\s\S]*?\n\}/,
+    );
     assert.ok(directoryFunction);
     assert.match(directoryFunction[0], /"Pengurus Inti"/);
     assert.match(directoryFunction[0], /"Program Studi"/);
     assert.doesNotMatch(directoryFunction[0], /"Pengurus Harian"/);
-    assert.match(organizationMigration, /set division = 'Pengurus Inti'/i);
-    assert.match(organizationMigration, /set division = 'Program Studi'/i);
+    assert.match(organizationMigration, /set\s+division\s*=\s*'Pengurus Inti'/i);
+    assert.match(organizationMigration, /set\s+division\s*=\s*'Program Studi'/i);
     assert.match(organizationMigration, /members_organization_group_check/i);
 
     const publicScript = fs.readFileSync(path.join(root, "js", "all-komponen.js"), "utf8");
@@ -130,13 +136,12 @@ test("core leadership is assigned to Pengurus Inti and harian members remain gro
         { position: "Kepala Divisi", division: "Internal" },
     ]);
 
-    assert.deepEqual(Array.from(directoryGroups, (group) => group.title), [
-        "Pengurus Inti",
-        "Program Studi",
-        "Pengurus Harian",
-    ]);
+    assert.deepEqual(
+        Array.from(directoryGroups, (group) => group.title),
+        ["Pengurus Inti", "Program Studi", "Pengurus Harian"],
+    );
     assert.deepEqual(
         Array.from(directoryGroups[2].divisions[0].members, (member) => member.position),
-        ["Kepala Divisi", "Anggota Divisi"]
+        ["Kepala Divisi", "Anggota Divisi"],
     );
 });

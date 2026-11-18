@@ -21,9 +21,9 @@ function createNode(tagName) {
 function contrastRatio(first, second) {
     function luminance(color) {
         const channels = color.match(/[a-f\d]{2}/gi).map((channel) => parseInt(channel, 16) / 255);
-        const linear = channels.map((channel) => channel <= 0.04045
-            ? channel / 12.92
-            : ((channel + 0.055) / 1.055) ** 2.4);
+        const linear = channels.map((channel) =>
+            channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+        );
         return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
     }
 
@@ -48,13 +48,22 @@ test("maintenance notice has readable contrast and no admin dashboard link", asy
 
     vm.runInNewContext(script, {
         document,
-        fetch: async () => ({ ok: true, json: async () => ({ mode: "maintenance", maintenanceNote: "Pemeliharaan terjadwal hari ini." }) }),
+        fetch: async () => ({
+            ok: true,
+            json: async () => ({
+                mode: "maintenance",
+                maintenanceNote: "Pemeliharaan terjadwal hari ini.",
+            }),
+        }),
         console: { error() {} },
     });
     await new Promise((resolve) => setImmediate(resolve));
 
     assert.equal(body.children.length, 1);
-    assert.deepEqual(body.children[0].children.map((child) => child.tagName), ["P", "H1", "P"]);
+    assert.deepEqual(
+        body.children[0].children.map((child) => child.tagName),
+        ["P", "H1", "P"],
+    );
     assert.equal(body.children[0].children[2].textContent, "Pemeliharaan terjadwal hari ini.");
     assert.doesNotMatch(script, /\/page\/admin\.html|Masuk admin/);
 
@@ -87,10 +96,16 @@ test("maintenance notice uses a default message when no custom note is saved", a
 
     vm.runInNewContext(script, {
         document,
-        fetch: async () => ({ ok: true, json: async () => ({ mode: "maintenance", maintenanceNote: "" }) }),
+        fetch: async () => ({
+            ok: true,
+            json: async () => ({ mode: "maintenance", maintenanceNote: "" }),
+        }),
         console: { error() {} },
     });
     await new Promise((resolve) => setImmediate(resolve));
 
-    assert.equal(body.children[0].children[2].textContent, "Kami sedang melakukan pembaruan. Silakan kembali beberapa saat lagi.");
+    assert.equal(
+        body.children[0].children[2].textContent,
+        "Kami sedang melakukan pembaruan. Silakan kembali beberapa saat lagi.",
+    );
 });
